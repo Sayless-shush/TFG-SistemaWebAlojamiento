@@ -39,19 +39,26 @@ const Equipos = () => {
   return (
     <Row gutter={[24, 24]}>
       <Col xs={24} md={8}>
-        <Card title="Añadir Nuevo Club" size="small" style={{ marginBottom: 24 }} headStyle={{ color: '#52c41a' }}>
+        <Card title="Añadir Nuevo Club" size="small" className="cool-card card-equipo-form" style={{ marginBottom: 24 }} headStyle={{ color: '#ff4d4f' }}>
           <Form form={formClub} layout="vertical" onFinish={onFinishClub}>
             <Form.Item name="nombre" label="Nombre Club" rules={[{ required: true }]}>
               <Input placeholder="Ej: FC Barcelona" />
             </Form.Item>
-            <Form.Item name="contacto_nombre" label="Contacto">
-              <Input placeholder="Nombre o Email" />
+            <Form.Item 
+              name="contacto_nombre" 
+              label="Correo de Contacto" 
+              rules={[
+                { required: true, message: 'Por favor introduce un correo' },
+                { type: 'email', message: 'Por favor introduce un correo válido (ejemplo@mail.com)' }
+              ]}
+            >
+              <Input placeholder="ejemplo@correo.com" />
             </Form.Item>
-            <Button type="primary" htmlType="submit" block style={{ backgroundColor: '#52c41a' }}>Crear Club</Button>
+            <Button type="primary" htmlType="submit" block size="large" className="btn-equipo">Crear Club</Button>
           </Form>
         </Card>
 
-        <Card title="Añadir Categoría (Equipo)" size="small" headStyle={{ color: '#1677ff' }}>
+        <Card title="Añadir Categoría (Equipo)" size="small" className="cool-card card-equipo-form" headStyle={{ color: '#ff4d4f' }}>
           <Form form={formEquipo} layout="vertical" onFinish={onFinishEquipo}>
             <Form.Item name="club_id" label="Club" rules={[{ required: true }]}>
               <Select placeholder="Seleccionar club">
@@ -64,7 +71,7 @@ const Equipos = () => {
             <Form.Item name="num_jugadores" label="Nº Jugadores" rules={[{ required: true }]}>
               <Input type="number" />
             </Form.Item>
-            <Button type="primary" htmlType="submit" block>Añadir Equipo</Button>
+            <Button type="primary" htmlType="submit" block size="large" className="btn-equipo">Añadir Equipo</Button>
           </Form>
         </Card>
       </Col>
@@ -75,12 +82,12 @@ const Equipos = () => {
             <Card 
               key={club.id} 
               hoverable 
-              style={{ borderLeft: '4px solid #1677ff' }}
+              className="cool-card card-equipo"
               bodyStyle={{ padding: '16px 24px' }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
-                  <Title level={5} style={{ margin: 0, color: '#1677ff' }}>{club.nombre}</Title>
+                  <Title level={5} style={{ margin: 0, color: '#ff4d4f' }}>{club.nombre}</Title>
                   <Text type="secondary">{club.contacto_nombre}</Text>
                 </div>
               </div>
@@ -92,7 +99,7 @@ const Equipos = () => {
                   <Text type="secondary" italic>No hay equipos registrados aún.</Text>
                 ) : (
                   equipos.filter(equipo => equipo.club_id === club.id).map(equipo => (
-                    <Tag color="blue" key={equipo.id} style={{ padding: '4px 8px', fontSize: '14px' }}>
+                    <Tag color="error" key={equipo.id} style={{ padding: '4px 8px', fontSize: '14px' }}>
                       <Text strong>{equipo.categoria}</Text>
                       <Divider type="vertical" />
                       {equipo.num_jugadores} jug.

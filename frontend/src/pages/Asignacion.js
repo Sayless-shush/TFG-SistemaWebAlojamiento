@@ -11,7 +11,7 @@ const Asignacion = () => {
       title="Asignación Automática"
       subTitle="Coming Soon, SAYLESS"
       extra={[
-        <Button type="primary" key="console">
+        <Button type="primary" key="console" size="large" shape="round">
           Volver al Inicio
         </Button>,
       ]}

@@ -7,16 +7,13 @@ const habitacionesRoutes = require('./routes/habitacionesRoutes');
 
 const app = express();
 
-
 app.use(cors());
 app.use(express.json());
-
 
 app.use('/api/hoteles', hotelesRoutes);
 app.use('/api/clubes', clubesRoutes);
 app.use('/api/equipos', equiposRoutes);
 app.use('/api/habitaciones', habitacionesRoutes);
-
 
 app.use((err, req, res, next) => {
     console.error(err.stack);

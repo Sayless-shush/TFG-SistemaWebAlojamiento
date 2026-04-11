@@ -15,7 +15,7 @@ function App() {
   return (
     <Layout className="min-vh-100">
       <Navbar vistaActiva={vistaActiva} setVistaActiva={setVistaActiva} />
-      <Content style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
+      <Content className="main-content">
         {vistaActiva === 'hoteles' && <Hoteles />}
         {vistaActiva === 'equipos' && <Equipos />}
         {vistaActiva === 'asignacion' && <Asignacion />}

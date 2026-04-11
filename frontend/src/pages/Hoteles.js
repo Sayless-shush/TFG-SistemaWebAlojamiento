@@ -42,7 +42,7 @@ const Hoteles = () => {
   return (
     <Row gutter={[24, 24]}>
       <Col xs={24} md={8}>
-        <Card title="Añadir Nuevo Hotel" size="small" style={{ marginBottom: 24 }}>
+        <Card title="Añadir Nuevo Hotel" size="small" className="cool-card card-hotel-form" style={{ marginBottom: 24 }} headStyle={{ color: '#1677ff' }}>
           <Form form={formHotel} layout="vertical" onFinish={onFinishHotel}>
             <Form.Item name="nombre" label="Nombre" rules={[{ required: true }]}>
               <Input placeholder="Ej: Hotel Gran Playa" />
@@ -59,11 +59,11 @@ const Hoteles = () => {
             <Form.Item name="cerca_autobus" valuePropName="checked">
               <Checkbox>Cerca de bus</Checkbox>
             </Form.Item>
-            <Button type="primary" htmlType="submit" block>Guardar Hotel</Button>
+            <Button type="primary" htmlType="submit" block size="large" className="btn-hotel">Guardar Hotel</Button>
           </Form>
         </Card>
 
-        <Card title="Añadir Habitaciones" size="small" headStyle={{ color: '#1677ff' }}>
+        <Card title="Añadir Habitaciones" size="small" className="cool-card card-hotel-form" headStyle={{ color: '#1677ff' }}>
           <Form form={formHab} layout="vertical" onFinish={onFinishHabitacion}>
             <Form.Item name="hotel_id" label="Hotel" rules={[{ required: true }]}>
               <Select placeholder="Seleccionar hotel">
@@ -85,7 +85,7 @@ const Hoteles = () => {
                 </Form.Item>
               </Col>
             </Row>
-            <Button type="primary" ghost htmlType="submit" block>Añadir Habitación</Button>
+            <Button type="primary" htmlType="submit" block size="large" className="btn-hotel">Añadir Habitación</Button>
           </Form>
         </Card>
       </Col>
@@ -96,12 +96,12 @@ const Hoteles = () => {
             <Card 
               key={hotel.id} 
               hoverable 
-              style={{ borderLeft: '4px solid #52c41a' }}
+              className="cool-card card-hotel"
               bodyStyle={{ padding: '16px 24px' }}
             >
               <Row justify="space-between" align="middle">
                 <Col>
-                  <Title level={5} style={{ margin: 0, color: '#52c41a' }}>
+                  <Title level={5} style={{ margin: 0, color: '#1677ff' }}>
                     {hotel.nombre} <Text type="secondary" style={{ fontSize: '14px', fontWeight: 'normal' }}>({hotel.categoria})</Text>
                   </Title>
                   <Text type="secondary" size="small">

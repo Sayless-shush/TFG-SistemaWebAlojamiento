@@ -25,7 +25,7 @@ const api = {
     body: JSON.stringify(equipo)
   }).then(res => res.json()),
 
-  // HABITACIONES
+  //HABITACIONES
   getHabitaciones: () => fetch(`${BASE_URL}/habitaciones`).then(res => res.json()),
   saveHabitacion: (habitacion) => fetch(`${BASE_URL}/habitaciones`, {
     method: 'POST',

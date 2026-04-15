@@ -21,3 +21,15 @@ exports.addClub = async (req, res) => {
         res.status(500).json({ error: 'Error al guardar el club' });
     }
 };
+
+exports.deleteClub = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const sql = 'DELETE FROM clubes WHERE id = ?';
+        await db.query(sql, [id]);
+        res.json({ message: 'Club eliminado' });
+    } catch (err) {
+        console.error('Error al eliminar club:', err);
+        res.status(500).json({ error: 'Error al eliminar el club' });
+    }
+};

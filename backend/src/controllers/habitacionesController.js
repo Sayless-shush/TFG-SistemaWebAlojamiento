@@ -21,3 +21,15 @@ exports.addHabitacion = async (req, res) => {
         res.status(500).json({ error: 'Error al guardar la habitación' });
     }
 };
+
+exports.deleteHabitacion = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const sql = 'DELETE FROM habitaciones WHERE id = ?';
+        await db.query(sql, [id]);
+        res.json({ message: 'Habitación eliminada' });
+    } catch (err) {
+        console.error('Error al eliminar habitación:', err);
+        res.status(500).json({ error: 'Error al eliminar la habitación' });
+    }
+};

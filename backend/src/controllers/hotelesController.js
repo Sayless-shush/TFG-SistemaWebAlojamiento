@@ -21,3 +21,15 @@ exports.addHotel = async (req, res) => {
         res.status(500).json({ error: 'Error al guardar el hotel' });
     }
 };
+
+exports.deleteHotel = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const sql = 'DELETE FROM hoteles WHERE id = ?';
+        await db.query(sql, [id]);
+        res.json({ message: 'Hotel y sus habitaciones eliminados' });
+    } catch (err) {
+        console.error('Error al eliminar hotel:', err);
+        res.status(500).json({ error: 'Error al eliminar el hotel' });
+    }
+};

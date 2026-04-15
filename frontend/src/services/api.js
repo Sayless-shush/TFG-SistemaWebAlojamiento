@@ -1,3 +1,4 @@
+
 const BASE_URL = 'http://localhost:3000/api';
 
 const api = {
@@ -8,6 +9,9 @@ const api = {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(hotel)
   }).then(res => res.json()),
+  deleteHotel: (id) => fetch(`${BASE_URL}/hoteles/${id}`, {
+    method: 'DELETE'
+  }).then(res => res.json()),
 
   //CLUBES
   getClubes: () => fetch(`${BASE_URL}/clubes`).then(res => res.json()),
@@ -15,6 +19,9 @@ const api = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(club)
+  }).then(res => res.json()),
+  deleteClub: (id) => fetch(`${BASE_URL}/clubes/${id}`, {
+    method: 'DELETE'
   }).then(res => res.json()),
 
   //EQUIPOS
@@ -24,6 +31,9 @@ const api = {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(equipo)
   }).then(res => res.json()),
+  deleteEquipo: (id) => fetch(`${BASE_URL}/equipos/${id}`, {
+    method: 'DELETE'
+  }).then(res => res.json()),
 
   //HABITACIONES
   getHabitaciones: () => fetch(`${BASE_URL}/habitaciones`).then(res => res.json()),
@@ -31,6 +41,9 @@ const api = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(habitacion)
+  }).then(res => res.json()),
+  deleteHabitacion: (id) => fetch(`${BASE_URL}/habitaciones/${id}`, {
+    method: 'DELETE'
   }).then(res => res.json()),
 };
 

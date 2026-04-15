@@ -21,3 +21,15 @@ exports.addEquipo = async (req, res) => {
         res.status(500).json({ error: 'Error al guardar el equipo' });
     }
 };
+
+exports.deleteEquipo = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const sql = 'DELETE FROM equipos WHERE id = ?';
+        await db.query(sql, [id]);
+        res.json({ message: 'Equipo eliminado' });
+    } catch (err) {
+        console.error('Error al eliminar equipo:', err);
+        res.status(500).json({ error: 'Error al eliminar el equipo' });
+    }
+};

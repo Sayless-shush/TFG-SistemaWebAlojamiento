@@ -15,12 +15,18 @@ import {
   message,
   Popconfirm,
   Tooltip,
+  DatePicker,
+  Tag,
 } from "antd";
 import { DeleteOutlined, CloseOutlined } from "@ant-design/icons";
 import api from "../services/api";
+import dayjs from "dayjs";
+import "dayjs/locale/es";
+dayjs.locale("es");
 
 const { Title, Text } = Typography;
 const { Option } = Select;
+const { RangePicker } = DatePicker;
 
 const Hoteles = () => {
   const [hoteles, setHoteles] = useState([]);
@@ -51,11 +57,25 @@ const Hoteles = () => {
   };
 
   const onFinishHabitacion = (values) => {
-    api.saveHabitacion(values).then(() => {
-      message.success("Habitación añadida");
-      formHab.resetFields();
-      cargarDatos();
-    });
+    const [start, end] = values.fechas_disponibilidad || [];
+
+    const habitacionData = {
+      ...values,
+      disponible_desde: start ? start.format("YYYY-MM-DD") : null,
+      disponible_hasta: end ? end.format("YYYY-MM-DD") : null,
+    };
+    delete habitacionData.fechas_disponibilidad;
+    api
+      .saveHabitacion(habitacionData)
+      .then(() => {
+        message.success("Habitación añadida con éxito");
+        formHab.resetFields();
+        cargarDatos();
+      })
+      .catch((error) => {
+        console.error("Error al guardar habitación:", error);
+        message.error("Error al conectar con el servidor.");
+      });
   };
 
   const handleDeleteHotel = (id) => {
@@ -95,7 +115,12 @@ const Hoteles = () => {
             <Form.Item
               name="nombre"
               label="Nombre"
-              rules={[{ required: true, message: 'Por favor, introduce el nombre del hotel.' }]}
+              rules={[
+                {
+                  required: true,
+                  message: "Por favor, introduce el nombre del hotel.",
+                },
+              ]}
             >
               <Input placeholder="Ej: Hotel Gran Playa" />
             </Form.Item>
@@ -137,7 +162,9 @@ const Hoteles = () => {
             <Form.Item
               name="hotel_id"
               label="Hotel"
-              rules={[{ required: true, message: 'Por favor, selecciona un hotel.' }]}
+              rules={[
+                { required: true, message: "Por favor, selecciona un hotel." },
+              ]}
             >
               <Select placeholder="Seleccionar hotel">
                 {hoteles.map((h) => (
@@ -147,9 +174,15 @@ const Hoteles = () => {
                 ))}
               </Select>
             </Form.Item>
-            <Form.Item name="tipo" 
-              label="Tipo" 
-              rules={[{ required: true, message: 'Por favor, introduce el tipo de habitación.' }]}
+            <Form.Item
+              name="tipo"
+              label="Tipo"
+              rules={[
+                {
+                  required: true,
+                  message: "Por favor, introduce el tipo de habitación.",
+                },
+              ]}
             >
               <Input placeholder="Ej: Doble, Triple" />
             </Form.Item>
@@ -158,7 +191,13 @@ const Hoteles = () => {
                 <Form.Item
                   name="capacidad"
                   label="Pax"
-                  rules={[{ required: true, message: 'Por favor, introduce la capacidad de la habitación.' }]}
+                  rules={[
+                    {
+                      required: true,
+                      message:
+                        "Por favor, introduce la capacidad de la habitación.",
+                    },
+                  ]}
                 >
                   <Input type="number" />
                 </Form.Item>
@@ -167,12 +206,30 @@ const Hoteles = () => {
                 <Form.Item
                   name="cantidad_total"
                   label="Cantidad"
-                  rules={[{ required: true, message: 'Por favor, introduce la cantidad de habitaciones.' }]}
+                  rules={[
+                    {
+                      required: true,
+                      message:
+                        "Por favor, introduce la cantidad de habitaciones.",
+                    },
+                  ]}
                 >
                   <Input type="number" />
                 </Form.Item>
               </Col>
             </Row>
+            <Form.Item
+              name="fechas_disponibilidad"
+              label="Disponibilidad (Desde - Hasta)"
+              rules={[
+                {
+                  required: true,
+                  message: "¡Falta definir la disponibilidad!",
+                },
+              ]}
+            >
+              <RangePicker style={{ width: "100%" }} />
+            </Form.Item>
             <Button
               type="primary"
               htmlType="submit"
@@ -185,7 +242,6 @@ const Hoteles = () => {
           </Form>
         </Card>
       </Col>
-
       <Col xs={24} md={16}>
         <Space direction="vertical" style={{ width: "100%" }} size="middle">
           {hoteles.map((hotel) => (
@@ -250,44 +306,109 @@ const Hoteles = () => {
                   habitaciones
                     .filter((hab) => hab.hotel_id === hotel.id)
                     .map((hab) => (
-                      <Badge
+                      <Card
                         key={hab.id}
-                        count={`x${hab.cantidad_total}`}
-                        offset={[5, 0]}
-                        color="#1677ff"
+                        size="small"
+                        style={{
+                          marginBottom: 12,
+                          width: "100%",
+                          borderRadius: "8px",
+                        }}
+                        bodyStyle={{
+                          padding: "12px",
+                          backgroundColor: "#f9f9f9",
+                        }}
                       >
-                        <Card
-                          size="small"
-                          bodyStyle={{
-                            padding: "4px 8px",
-                            backgroundColor: "#f5f5f5",
-                          }}
-                        >
-                          <Row align="middle" gutter={8}>
-                            <Col>
-                              <Text size="small">
-                                {hab.tipo} ({hab.capacidad} pax)
-                              </Text>
-                            </Col>
-                            <Col>
-                              <Popconfirm
-                                title="¿Eliminar habitación?"
-                                onConfirm={() => handleDeleteHabitacion(hab.id)}
-                                okText="Sí"
-                                cancelText="No"
+                        <Row justify="space-between" align="top">
+                          {/* 左侧：房型、容量和可用日期 */}
+                          <Col flex="auto">
+                            <Text
+                              strong
+                              style={{
+                                fontSize: "14px",
+                                display: "block",
+                                marginBottom: 4,
+                              }}
+                            >
+                              {hab.tipo}
+                            </Text>
+                            <Text
+                              type="secondary"
+                              style={{
+                                fontSize: "12px",
+                                display: "block",
+                                marginBottom: 8,
+                              }}
+                            >
+                              Capacidad: {hab.capacidad} pax/hab
+                            </Text>
+
+                            {/* 日期卡片区域*/}
+                            {hab.disponible_desde && (
+                              <Space
+                                size={4}
+                                style={{ display: "flex", flexWrap: "wrap" }}
                               >
-                                <CloseOutlined
-                                  style={{
-                                    fontSize: "10px",
-                                    color: "#ff4d4f",
-                                    cursor: "pointer",
-                                  }}
-                                />
-                              </Popconfirm>
-                            </Col>
-                          </Row>
-                        </Card>
-                      </Badge>
+                                <div className="mini-date-card checkin">
+                                  <div className="mini-card-label">Desde</div>
+                                  <div className="mini-card-value">
+                                    {dayjs(hab.disponible_desde).format(
+                                      "MMMM DD",
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="mini-date-card checkout">
+                                  <div className="mini-card-label">Hasta</div>
+                                  <div className="mini-card-value">
+                                    {dayjs(hab.disponible_hasta).format(
+                                      "MMMM DD",
+                                    )}
+                                  </div>
+                                </div>
+                              </Space>
+                            )}
+                          </Col>
+
+                          {/* 右侧：房间数量标签和删除按钮 */}
+                          <Col
+                            style={{
+                              display: "flex",
+                              flexDirection: "column",
+                              alignItems: "flex-end",
+                              justifyContent: "space-between",
+                            }}
+                          >
+                            <Tag
+                              color="#1677ff"
+                              style={{
+                                marginRight: 0,
+                                marginBottom: 12,
+                                borderRadius: "4px",
+                                fontWeight: "bold",
+                                border: "none",
+                              }}
+                            >
+                              {hab.cantidad_total} DISPONIBLES
+                            </Tag>
+
+                            <Popconfirm
+                              title="¿Eliminar esta habitación?"
+                              onConfirm={() => handleDeleteHabitacion(hab.id)}
+                              okText="Sí"
+                              cancelText="No"
+                            >
+                              <Button
+                                type="text"
+                                danger
+                                size="small"
+                                icon={
+                                  <CloseOutlined style={{ fontSize: "12px" }} />
+                                }
+                              />
+                            </Popconfirm>
+                          </Col>
+                        </Row>
+                      </Card>
                     ))
                 )}
               </Space>

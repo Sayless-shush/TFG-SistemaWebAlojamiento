@@ -11,14 +11,15 @@ exports.getHabitaciones = async (req, res) => {
 };
 
 exports.addHabitacion = async (req, res) => {
-    const { hotel_id, tipo, capacidad, cantidad_total } = req.body;
+    const { hotel_id, tipo, capacidad, cantidad_total, disponible_desde, disponible_hasta } = req.body;
     try {
-        const sql = 'INSERT INTO habitaciones (hotel_id, tipo, capacidad, cantidad_total) VALUES (?, ?, ?, ?)';
-        const [results] = await db.query(sql, [hotel_id, tipo, capacidad, cantidad_total]);
-        res.json({ message: 'Habitación guardada', id: results.insertId });
+        const sql = `INSERT INTO habitaciones 
+                     (hotel_id, tipo, capacidad, cantidad_total, disponible_desde, disponible_hasta) 
+                     VALUES (?, ?, ?, ?, ?, ?)`;
+        await db.query(sql, [hotel_id, tipo, capacidad, cantidad_total, disponible_desde, disponible_hasta]);
+        res.json({ message: 'Habitación guardada con fechas' });
     } catch (err) {
-        console.error('Error al guardar habitación:', err);
-        res.status(500).json({ error: 'Error al guardar la habitación' });
+        res.status(500).json({ error: 'Error al guardar habitación' });
     }
 };
 

@@ -7,19 +7,24 @@ import {
   Button,
   Row,
   Col,
-  Badge,
   Typography,
+  Tag,
   Space,
   Divider,
   message,
   Popconfirm,
   Tooltip,
+  DatePicker,
 } from "antd";
 import { DeleteOutlined, CloseOutlined } from "@ant-design/icons";
 import api from "../services/api";
+import dayjs from "dayjs";
+import "dayjs/locale/es";
+dayjs.locale("es");
 
 const { Title, Text } = Typography;
 const { Option } = Select;
+const { RangePicker } = DatePicker;
 
 const Equipos = () => {
   const [clubes, setClubes] = useState([]);
@@ -136,7 +141,8 @@ const Equipos = () => {
               name="club_id"
               label="Club"
               rules={[
-                {required: true, message: "Por favor, selecciona un club."}]}
+                { required: true, message: "Por favor, selecciona un club." },
+              ]}
             >
               <Select placeholder="Seleccionar club">
                 {clubes.map((club) => (
@@ -149,14 +155,31 @@ const Equipos = () => {
             <Form.Item
               name="categoria"
               label="Categoría"
-              rules={[{ required: true, message: "Por favor, introduce la categoría." }]}
+              rules={[
+                {
+                  required: true,
+                  message: "Por favor, introduce la categoría.",
+                },
+              ]}
             >
               <Input placeholder="Ej: U12, Femenino" />
             </Form.Item>
             <Form.Item
+              name="fechas_estancia"
+              label="Check-in / Check-out"
+              rules={[{ required: true, message: "¡Falta la fecha!" }]}
+            >
+              <RangePicker style={{ width: "100%" }} />
+            </Form.Item>
+            <Form.Item
               name="num_jugadores"
               label="Nº Jugadores"
-              rules={[{ required: true, message: "Por favor, introduce el número de jugadores." }]}
+              rules={[
+                {
+                  required: true,
+                  message: "Por favor, introduce el número de jugadores.",
+                },
+              ]}
             >
               <Input type="number" />
             </Form.Item>
@@ -182,7 +205,7 @@ const Equipos = () => {
               className="cool-card card-equipo"
               bodyStyle={{ padding: "16px 24px" }}
             >
-              {/* ===== 外层：俱乐部信息 & 垃圾桶图标 ===== */}
+              {/*外层：俱乐部信息 & 垃圾桶图标*/}
               <Row justify="space-between" align="middle">
                 <Col>
                   <Title level={5} style={{ margin: 0, color: "#ff4d4f" }}>
@@ -217,7 +240,7 @@ const Equipos = () => {
 
               <Divider style={{ margin: "12px 0" }} />
 
-              {/* ===== 内层：队伍列表 & 红色叉叉 ===== */}
+              {/*内层：队伍列表 & 红色叉叉*/}
               <Text
                 strong
                 style={{ fontSize: "12px", display: "block", marginBottom: 8 }}
@@ -233,55 +256,111 @@ const Equipos = () => {
                   equipos
                     .filter((eq) => eq.club_id === club.id)
                     .map((equipo) => {
-                      // 可以在这里计算一下这支队伍的总人数
+                      // 队伍的总人数
                       const totalPersonas =
                         (equipo.num_jugadores || 0) +
                         (equipo.num_entrenadores || 0) +
                         (equipo.num_acompanantes || 0);
 
                       return (
-                        <Badge
+                        <Card
                           key={equipo.id}
-                          count={`${totalPersonas} pax`} // 显示队伍总人数
-                          offset={[10, 0]}
-                          color="#52c41a" // 换成绿色，和酒店房间区分开
+                          size="small"
+                          style={{
+                            marginBottom: 12, // 卡片间距
+                            width: "100%",
+                            borderRadius: "8px",
+                          }}
+                          bodyStyle={{
+                            padding: "12px",
+                            backgroundColor: "#f9f9f9",
+                          }}
                         >
-                          <Card
-                            size="small"
-                            bodyStyle={{
-                              padding: "4px 8px",
-                              backgroundColor: "#f5f5f5",
-                            }}
-                          >
-                            <Row align="middle" gutter={8}>
-                              <Col>
-                                <Text size="small" strong>
-                                  {equipo.categoria}
-                                </Text>
-                              </Col>
+                          <Row justify="space-between" align="top">
+                            {/* 左侧：类别和日期 */}
+                            <Col flex="auto">
+                              <Text
+                                strong
+                                style={{
+                                  fontSize: "14px",
+                                  display: "block",
+                                  marginBottom: 8,
+                                }}
+                              >
+                                {equipo.categoria}
+                              </Text>
 
-                              {/* 队伍的红色小叉叉删除按钮 */}
-                              <Col>
-                                <Popconfirm
-                                  title="¿Eliminar este equipo?"
-                                  onConfirm={() =>
-                                    handleDeleteEquipo(equipo.id)
-                                  }
-                                  okText="Sí"
-                                  cancelText="No"
+                              {/* 日期卡片区域 */}
+                              {equipo.fecha_check_in && (
+                                <Space
+                                  size={4}
+                                  style={{ display: "flex", flexWrap: "wrap" }}
                                 >
-                                  <CloseOutlined
-                                    style={{
-                                      fontSize: "10px",
-                                      color: "#ff4d4f",
-                                      cursor: "pointer",
-                                    }}
-                                  />
-                                </Popconfirm>
-                              </Col>
-                            </Row>
-                          </Card>
-                        </Badge>
+                                  <div className="mini-date-card checkin">
+                                    <div className="mini-card-label">
+                                      Checkin
+                                    </div>
+                                    <div className="mini-card-value">
+                                      {dayjs(equipo.fecha_check_in).format(
+                                        "MMMM DD",
+                                      )}
+                                    </div>
+                                  </div>
+                                  <div className="mini-date-card checkout">
+                                    <div className="mini-card-label">
+                                      Checkout
+                                    </div>
+                                    <div className="mini-card-value">
+                                      {dayjs(equipo.fecha_check_out).format(
+                                        "MMMM DD",
+                                      )}
+                                    </div>
+                                  </div>
+                                </Space>
+                              )}
+                            </Col>
+
+                            {/* 右侧：人数标签和删除按钮 */}
+                            <Col
+                              style={{
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "flex-end",
+                                justifyContent: "space-between",
+                              }}
+                            >
+                              <Tag
+                                color="#f04f4f"
+                                style={{
+                                  marginRight: 0,
+                                  marginBottom: 12,
+                                  borderRadius: "4px",
+                                  fontWeight: "bold",
+                                  border: "none",
+                                }}
+                              >
+                                {totalPersonas} PERSONAS
+                              </Tag>
+                              <Popconfirm
+                                title="¿Eliminar este equipo?"
+                                onConfirm={() => handleDeleteEquipo(equipo.id)}
+                                okText="Sí"
+                                cancelText="No"
+                              >
+                                <Button
+                                  type="text"
+                                  danger
+                                  size="small"
+                                  icon={
+                                    <CloseOutlined
+                                      style={{ fontSize: "12px" }}
+                                    />
+                                  }
+                                />
+                              </Popconfirm>
+                            </Col>
+                          </Row>
+                        </Card>
                       );
                     })
                 )}

@@ -11,14 +11,15 @@ exports.getEquipos = async (req, res) => {
 };
 
 exports.addEquipo = async (req, res) => {
-    const { club_id, categoria, num_jugadores } = req.body;
+    const { club_id, categoria, num_jugadores, num_entrenadores, num_acompanantes, fecha_check_in, fecha_check_out } = req.body;
     try {
-        const sql = 'INSERT INTO equipos (club_id, categoria, num_jugadores) VALUES (?, ?, ?)';
-        const [results] = await db.query(sql, [club_id, categoria, num_jugadores]);
-        res.json({ message: '¡Equipo guardado!', id: results.insertId });
+        const sql = `INSERT INTO equipos 
+                     (club_id, categoria, num_jugadores, num_entrenadores, num_acompanantes, fecha_check_in, fecha_check_out) 
+                     VALUES (?, ?, ?, ?, ?, ?, ?)`;
+        await db.query(sql, [club_id, categoria, num_jugadores, num_entrenadores, num_acompanantes, fecha_check_in, fecha_check_out]);
+        res.json({ message: 'Equipo guardado con fechas' });
     } catch (err) {
-        console.error('Error al guardar equipo:', err);
-        res.status(500).json({ error: 'Error al guardar el equipo' });
+        res.status(500).json({ error: 'Error al guardar equipo' });
     }
 };
 

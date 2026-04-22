@@ -138,7 +138,7 @@ const Hoteles = () => {
               </Select>
             </Form.Item>
             <Form.Item name="cerca_autobus" valuePropName="checked">
-              <Checkbox>Cerca de bus</Checkbox>
+              <Checkbox>Cerca de bus🚌</Checkbox>
             </Form.Item>
             <Button
               type="primary"
@@ -180,11 +180,16 @@ const Hoteles = () => {
               rules={[
                 {
                   required: true,
-                  message: "Por favor, introduce el tipo de habitación.",
+                  message: "Por favor, selecciona el tipo de habitación.",
                 },
               ]}
             >
-              <Input placeholder="Ej: Doble, Triple" />
+              <Select placeholder="Selecciona el tipo">
+                <Option value="1Persona">1 Persona</Option>
+                <Option value="Doble">Doble</Option>
+                <Option value="Triple">Triple</Option>
+                <Option value="Cuádruple">Cuádruple</Option>
+              </Select>
             </Form.Item>
             <Row gutter={8}>
               <Col span={12}>
@@ -264,8 +269,8 @@ const Hoteles = () => {
                   </Title>
                   <Text type="secondary" size="small">
                     {hotel.cerca_autobus
-                      ? "Parada cercana"
-                      : "Sin parada cercana"}
+                      ? "🚌Parada cercana"
+                      : "Sin 🚌parada cercana"}
                   </Text>
                 </Col>
                 <Col>

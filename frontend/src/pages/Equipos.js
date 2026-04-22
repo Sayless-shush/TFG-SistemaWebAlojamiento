@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
   Card,
+  Checkbox,
   Form,
   Input,
   Select,
@@ -15,8 +16,13 @@ import {
   Popconfirm,
   Tooltip,
   DatePicker,
+  Radio,
 } from "antd";
-import { DeleteOutlined, CloseOutlined } from "@ant-design/icons";
+import {
+  FilterOutlined,
+  DeleteOutlined,
+  CloseOutlined,
+} from "@ant-design/icons";
 import api from "../services/api";
 import dayjs from "dayjs";
 import "dayjs/locale/es";
@@ -28,6 +34,10 @@ const { RangePicker } = DatePicker;
 
 const Equipos = () => {
   const [clubes, setClubes] = useState([]);
+  const [filtros, setFiltros] = useState({
+    categorias: [], // multiples categorias
+    tieneBus: null, // true es si bus, false es no bus, null es sin filtro
+  });
   const [equipos, setEquipos] = useState([]);
   const [formClub] = Form.useForm();
   const [formEquipo] = Form.useForm();
@@ -42,7 +52,11 @@ const Equipos = () => {
   }, []);
 
   const onFinishClub = (values) => {
-    api.saveClub(values).then(() => {
+    const clubData = {
+      ...values,
+      tiene_bus: values.tiene_bus || false,
+    };
+    api.saveClub(clubData).then(() => {
       message.success("Club creado correctamente");
       formClub.resetFields();
       cargarDatos();
@@ -50,11 +64,29 @@ const Equipos = () => {
   };
 
   const onFinishEquipo = (values) => {
-    api.saveEquipo(values).then(() => {
-      message.success("Equipo añadido al club");
-      formEquipo.resetFields();
-      cargarDatos();
-    });
+    const [start, end] = values.fechas_estancia || [];
+
+    const equipoData = {
+      ...values,
+      num_entrenadores: values.num_entrenadores || 0,
+      num_acompanantes: values.num_acompanantes || 0,
+      fecha_check_in: start ? start.format("YYYY-MM-DD") : null,
+      fecha_check_out: end ? end.format("YYYY-MM-DD") : null,
+      tipologia: values.tipologia || null,
+    };
+    delete equipoData.fechas_estancia;
+
+    api
+      .saveEquipo(equipoData)
+      .then(() => {
+        message.success("Equipo añadido al club");
+        formEquipo.resetFields();
+        cargarDatos();
+      })
+      .catch((error) => {
+        console.error("Error al guardar:", error);
+        message.error("Error al conectar con el servidor.");
+      });
   };
 
   const handleDeleteClub = (id) => {
@@ -81,6 +113,38 @@ const Equipos = () => {
       });
   };
 
+  // todas las categorías únicas para el filtro de categorías
+  const categoriasUnicas = [...new Set(equipos.map((eq) => eq.categoria))];
+
+  // filtrar equipos primero por categoría,luego clubs basandose de los equipos
+  const equiposFiltrados = equipos.filter((equipo) => {
+    if (
+      filtros.categorias.length > 0 &&
+      !filtros.categorias.includes(equipo.categoria)
+    )
+      return false; //ocultar si no esta
+    return true;
+  });
+
+  // filtrar clubes basándose en los equipos filtrados y bus servicio
+  const clubesFiltrados = clubes.filter((club) => {
+    // si no conincide con el servicio de bus, ocultar
+    if (
+      filtros.tieneBus !== null &&
+      club.tiene_bus !== (filtros.tieneBus === true ? 1 : 0)
+    )
+      return false;
+
+    // los clubs que no tienen equipos filtrado elegido, ocultar
+    const isCategoriaFiltered = filtros.categorias.length > 0;
+    const tieneEquiposValidos = equiposFiltrados.some(
+      (eq) => eq.club_id === club.id,
+    );
+    if (isCategoriaFiltered && !tieneEquiposValidos) return false;
+
+    return true;
+  });
+
   return (
     <Row gutter={[24, 24]}>
       <Col xs={24} md={8}>
@@ -95,28 +159,28 @@ const Equipos = () => {
             <Form.Item
               name="nombre"
               label="Nombre Club"
-              rules={[
-                {
-                  required: true,
-                  message: "Por favor, introduce el nombre del Club.",
-                },
-              ]}
+              rules={[{ required: true, message: "Obligatorio" }]}
             >
               <Input placeholder="Ej: FC Barcelona" />
             </Form.Item>
-            <Form.Item
-              name="contacto_nombre"
-              label="Correo de Contacto"
-              rules={[
-                { required: true, message: "Por favor introduce un correo" },
-                {
-                  type: "email",
-                  message:
-                    "Por favor introduce un correo válido (ejemplo@mail.com)",
-                },
-              ]}
-            >
-              <Input placeholder="ejemplo@correo.com" />
+            <Form.Item name="contacto_nombre" label="Nombre de Contacto">
+              <Input placeholder="Ej: Juan Pérez" />
+            </Form.Item>
+            <Form.Item name="contacto_telefono" label="Teléfono">
+              <Input placeholder="Ej: +34 600 000 000" />
+            </Form.Item>
+            <Form.Item name="contacto_email" label="Correo Electrónico">
+              <Input type="email" placeholder="ejemplo@correo.com" />
+            </Form.Item>
+            <Form.Item name="comercial" label="Comercial Asignado">
+              <Select placeholder="Selecciona un comercial" allowClear>
+                <Option value="Ana García">Ana García</Option>
+                <Option value="Carlos López">Carlos López</Option>
+                <Option value="María Fernández">María Fernández</Option>
+              </Select>
+            </Form.Item>
+            <Form.Item name="tiene_bus" valuePropName="checked">
+              <Checkbox>Tiene servicio de Bus 🚌</Checkbox>
             </Form.Item>
             <Button
               type="primary"
@@ -125,7 +189,7 @@ const Equipos = () => {
               size="large"
               className="btn-equipo"
             >
-              Crear Club
+              Guardar Club
             </Button>
           </Form>
         </Card>
@@ -152,18 +216,22 @@ const Equipos = () => {
                 ))}
               </Select>
             </Form.Item>
-            <Form.Item
-              name="categoria"
-              label="Categoría"
-              rules={[
-                {
-                  required: true,
-                  message: "Por favor, introduce la categoría.",
-                },
-              ]}
-            >
-              <Input placeholder="Ej: U12, Femenino" />
-            </Form.Item>
+            <Row gutter={12}>
+              <Col span={12}>
+                <Form.Item
+                  name="categoria"
+                  label="Categoría(sin espacio)"
+                  rules={[{ required: true }]}
+                >
+                  <Input placeholder="Ej: U12" />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name="tipologia" label="Tipología (opcional)">
+                  <Input placeholder="Ej: Entrenador" />
+                </Form.Item>
+              </Col>
+            </Row>
             <Form.Item
               name="fechas_estancia"
               label="Check-in / Check-out"
@@ -174,14 +242,29 @@ const Equipos = () => {
             <Form.Item
               name="num_jugadores"
               label="Nº Jugadores"
-              rules={[
-                {
-                  required: true,
-                  message: "Por favor, introduce el número de jugadores.",
-                },
-              ]}
+              rules={[{ required: true }]}
             >
               <Input type="number" />
+            </Form.Item>
+            <Form.Item
+              name="tipo_habitacion_deseada"
+              label="Habitación Preferida"
+              rules={[
+                { required: true, message: "Obligatorio para la asignación" },
+              ]}
+            >
+              <Select placeholder="Selecciona el tipo de habitación preferida">
+                <Option value="1Persona">1 Persona</Option>
+                <Option value="Doble">Doble</Option>
+                <Option value="Triple">Triple</Option>
+                <Option value="Cuádruple">Cuádruple</Option>
+              </Select>
+            </Form.Item>
+            <Form.Item name="observaciones" label="Observaciones (Opcional)">
+              <Input.TextArea
+                rows={2}
+                placeholder="Alergias, peticiones especiales..."
+              />
             </Form.Item>
             <Button
               type="primary"
@@ -197,8 +280,55 @@ const Equipos = () => {
       </Col>
 
       <Col xs={24} md={16}>
+        <Card
+          size="small"
+          style={{
+            marginBottom: 16,
+            borderRadius: "8px",
+            background: "#f0f2f5",
+            border: "1px solid #d9d9d9",
+          }}
+        >
+          <Row align="middle" gutter={16}>
+            <Col>
+              <FilterOutlined style={{ fontSize: "16px", color: "#1890ff" }} />{" "}
+              <Text strong>Filtros:</Text>
+            </Col>
+            <Col flex="auto">
+              <Select
+                mode="multiple"
+                allowClear
+                style={{ width: "100%", minWidth: "200px" }}
+                placeholder="Filtrar por Categoría (Ej: U11, U12)"
+                value={filtros.categorias}
+                onChange={(vals) =>
+                  setFiltros({ ...filtros, categorias: vals })
+                }
+              >
+                {categoriasUnicas.map((cat) => (
+                  <Option key={cat} value={cat}>
+                    {cat}
+                  </Option>
+                ))}
+              </Select>
+            </Col>
+            <Col>
+              <Radio.Group
+                value={filtros.tieneBus}
+                onChange={(e) =>
+                  setFiltros({ ...filtros, tieneBus: e.target.value })
+                }
+                buttonStyle="solid"
+              >
+                <Radio.Button value={null}>Todos</Radio.Button>
+                <Radio.Button value={true}>🚌 Con Bus</Radio.Button>
+                <Radio.Button value={false}>Sin Bus</Radio.Button>
+              </Radio.Group>
+            </Col>
+          </Row>
+        </Card>
         <Space direction="vertical" style={{ width: "100%" }} size="middle">
-          {clubes.map((club) => (
+          {clubesFiltrados.map((club) => (
             <Card
               key={club.id}
               hoverable
@@ -210,10 +340,26 @@ const Equipos = () => {
                 <Col>
                   <Title level={5} style={{ margin: 0, color: "#ff4d4f" }}>
                     {club.nombre}
+                    {club.tiene_bus === 1 && (
+                      <Tag color="orange" style={{ marginLeft: 12 }}>
+                        🚌 Servicio de Bus
+                      </Tag>
+                    )}
                   </Title>
-                  <Text type="secondary" size="small">
-                    Contacto: {club.contacto_nombre}
+                  <Text
+                    type="secondary"
+                    size="small"
+                    style={{ display: "block" }}
+                  >
+                    👤 {club.contacto_nombre || "N/A"} | 📞{" "}
+                    {club.contacto_telefono || "N/A"} | 📧{" "}
+                    {club.contacto_email || "N/A"}
                   </Text>
+                  {club.comercial && (
+                    <Tag color="blue" style={{ marginTop: 4 }}>
+                      Comercial: {club.comercial}
+                    </Tag>
+                  )}
                 </Col>
 
                 {/* 俱乐部的垃圾桶删除按钮 */}
@@ -253,7 +399,7 @@ const Equipos = () => {
                     Sin equipos registrados.
                   </Text>
                 ) : (
-                  equipos
+                  equiposFiltrados
                     .filter((eq) => eq.club_id === club.id)
                     .map((equipo) => {
                       // 队伍的总人数
@@ -288,13 +434,28 @@ const Equipos = () => {
                                 }}
                               >
                                 {equipo.categoria}
+                                {equipo.tipologia && (
+                                  <Tag color="cyan" style={{ marginLeft: 8 }}>
+                                    {equipo.tipologia}
+                                  </Tag>
+                                )}
+                                {/* 新增：房型标签 */}
+                                {equipo.tipo_habitacion_deseada && (
+                                  <Tag color="purple" style={{ marginLeft: 8 }}>
+                                    {equipo.tipo_habitacion_deseada}
+                                  </Tag>
+                                )}
                               </Text>
 
-                              {/* 日期卡片区域 */}
+                              {/* 日期卡片区域保持不变 */}
                               {equipo.fecha_check_in && (
                                 <Space
                                   size={4}
-                                  style={{ display: "flex", flexWrap: "wrap" }}
+                                  style={{
+                                    display: "flex",
+                                    flexWrap: "wrap",
+                                    marginBottom: 8,
+                                  }}
                                 >
                                   <div className="mini-date-card checkin">
                                     <div className="mini-card-label">
@@ -317,6 +478,23 @@ const Equipos = () => {
                                     </div>
                                   </div>
                                 </Space>
+                              )}
+
+                              {/* 新增：显示备注区域 */}
+                              {equipo.observaciones && (
+                                <Text
+                                  type="secondary"
+                                  italic
+                                  style={{
+                                    fontSize: "11px",
+                                    display: "block",
+                                    background: "#eee",
+                                    padding: "4px",
+                                    borderRadius: "4px",
+                                  }}
+                                >
+                                  📝 {equipo.observaciones}
+                                </Text>
                               )}
                             </Col>
 

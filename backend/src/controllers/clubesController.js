@@ -11,10 +11,11 @@ exports.getClubes = async (req, res) => {
 };
 
 exports.addClub = async (req, res) => {
-    const { nombre, contacto_nombre, contacto_email } = req.body;
+    const { nombre, contacto_nombre, contacto_email, contacto_telefono, comercial, tiene_bus } = req.body;
     try {
-        const sql = 'INSERT INTO clubes (nombre, contacto_nombre, contacto_email) VALUES (?, ?, ?)';
-        const [results] = await db.query(sql, [nombre, contacto_nombre, contacto_email]);
+        const busVal = tiene_bus ? 1 : 0; 
+        const sql = 'INSERT INTO clubes (nombre, contacto_nombre, contacto_email, contacto_telefono, comercial, tiene_bus) VALUES (?, ?, ?, ?, ?, ?)';
+        const [results] = await db.query(sql, [nombre, contacto_nombre, contacto_email, contacto_telefono, comercial, busVal]);
         res.json({ message: 'Club guardado', id: results.insertId });
     } catch (err) {
         console.error('Error al guardar club:', err);

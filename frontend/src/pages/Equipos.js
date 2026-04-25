@@ -115,6 +115,10 @@ const Equipos = () => {
 
   // todas las categorías únicas para el filtro de categorías
   const categoriasUnicas = [...new Set(equipos.map((eq) => eq.categoria))];
+  // todas los comerciales únicos para el filtro de comerciales, filtrando los vacíos
+  const comercialesUnicos = [
+    ...new Set(clubes.map((c) => c.comercial).filter(Boolean)),
+  ];
 
   // filtrar equipos primero por categoría,luego clubs basandose de los equipos
   const equiposFiltrados = equipos.filter((equipo) => {
@@ -134,6 +138,8 @@ const Equipos = () => {
       club.tiene_bus !== (filtros.tieneBus === true ? 1 : 0)
     )
       return false;
+    // si no conincide con el comercial, ocultar
+    if (filtros.comercial && club.comercial !== filtros.comercial) return false;
 
     // los clubs que no tienen equipos filtrado elegido, ocultar
     const isCategoriaFiltered = filtros.categorias.length > 0;
@@ -172,11 +178,50 @@ const Equipos = () => {
             <Form.Item name="contacto_email" label="Correo Electrónico">
               <Input type="email" placeholder="ejemplo@correo.com" />
             </Form.Item>
-            <Form.Item name="comercial" label="Comercial Asignado">
+            <Form.Item
+              name="comercial"
+              label="Comercial Asignado"
+              rules={[
+                { required: true, message: "Debes asignar un comercial" },
+              ]}
+            >
               <Select placeholder="Selecciona un comercial" allowClear>
-                <Option value="Ana García">Ana García</Option>
-                <Option value="Carlos López">Carlos López</Option>
-                <Option value="María Fernández">María Fernández</Option>
+                <Option value="SIN PATROCINIO">SIN PATROCINIO</Option>
+                <Option value="Aitor Moreda">Aitor Moreda</Option>
+                <Option value="Juan López">Juan López</Option>
+                <Option value="Jesus López">Jesus López</Option>
+                <Option value="FTI Carolina">FTI Carolina</Option>
+                <Option value="Nestor García">Nestor García</Option>
+                <Option value="Nando">Nando</Option>
+                <Option value="Darren DBSports">Darren DBSports</Option>
+                <Option value="Rory TW Soccer">Rory TW Soccer</Option>
+                <Option value="OnSports">OnSports</Option>
+                <Option value="Vigfús Geir (TA Sport Travel)">
+                  Vigfús Geir (TA Sport Travel)
+                </Option>
+                <Option value="Tommy Carter">Tommy Carter</Option>
+                <Option value="MHL">MHL</Option>
+                <Option value="Hommikukuma">Hommikukuma</Option>
+                <Option value="Adrià Miró / Jan Esteller">
+                  Adrià Miró / Jan Esteller
+                </Option>
+                <Option value="Alain Morange">Alain Morange</Option>
+                <Option value="Rafa Navarro">Rafa Navarro</Option>
+                <Option value="Aitor Orive / Gonzalo">
+                  Aitor Orive / Gonzalo
+                </Option>
+                <Option value="Sergi Ferrer">Sergi Ferrer</Option>
+                <Option value="Tommy Carter">Tommy Carter</Option>
+                <Option value="Jori Aguilar">Jori Aguilar</Option>
+                <Option value="Toño Guiu">Toño Guiu</Option>
+                <Option value="Secun">Secun</Option>
+                <Option value="Ibertravel">Ibertravel</Option>
+                <Option value="YoungTalentsGroup">YoungTalentsGroup</Option>
+                <Option value="Jaume Canals">Jaume Canals</Option>
+                <Option value="Pilar DeporteYTorneos.com">
+                  Pilar DeporteYTorneos.com
+                </Option>
+                <Option value="Marcial">Marcial</Option>
               </Select>
             </Form.Item>
             <Form.Item name="tiene_bus" valuePropName="checked">
@@ -289,6 +334,7 @@ const Equipos = () => {
             border: "1px solid #d9d9d9",
           }}
         >
+          {/* Filtos categoria */}
           <Row align="middle" gutter={16}>
             <Col>
               <FilterOutlined style={{ fontSize: "16px", color: "#1890ff" }} />{" "}
@@ -312,7 +358,23 @@ const Equipos = () => {
                 ))}
               </Select>
             </Col>
+            <Col style={{ width: 200 }}>
+              {/* Filtos Comercial */}
+              <Select
+                allowClear
+                placeholder="Por Comercial"
+                style={{ width: "100%" }}
+                onChange={(val) => setFiltros({ ...filtros, comercial: val })}
+              >
+                {comercialesUnicos.map((c) => (
+                  <Option key={c} value={c}>
+                    {c}
+                  </Option>
+                ))}
+              </Select>
+            </Col>
             <Col>
+              {/* Filtos bus */}
               <Radio.Group
                 value={filtros.tieneBus}
                 onChange={(e) =>

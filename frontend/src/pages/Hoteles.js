@@ -8,7 +8,6 @@ import {
   Checkbox,
   Row,
   Col,
-  Badge,
   Typography,
   Space,
   Divider,

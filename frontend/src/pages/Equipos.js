@@ -51,33 +51,33 @@ const Equipos = () => {
     cargarDatos();
   }, []);
 
-  const onFinishClub = (values) => {
-    const clubData = {
-      ...values,
-      tiene_bus: values.tiene_bus || false,
+  const alEnviarClub = (valores) => {
+    const datosClub = {
+      ...valores,
+      tiene_bus: valores.tiene_bus || false,
     };
-    api.saveClub(clubData).then(() => {
+    api.saveClub(datosClub).then(() => {
       message.success("Club creado correctamente");
       formClub.resetFields();
       cargarDatos();
     });
   };
 
-  const onFinishEquipo = (values) => {
-    const [start, end] = values.fechas_estancia || [];
+  const alEnviarEquipo = (valores) => {
+    const [inicio, fin] = valores.fechas_estancia || [];
 
-    const equipoData = {
-      ...values,
-      num_entrenadores: values.num_entrenadores || 0,
-      num_acompanantes: values.num_acompanantes || 0,
-      fecha_check_in: start ? start.format("YYYY-MM-DD") : null,
-      fecha_check_out: end ? end.format("YYYY-MM-DD") : null,
-      tipologia: values.tipologia || null,
+    const datosEquipo = {
+      ...valores,
+      num_entrenadores: valores.num_entrenadores || 0,
+      num_acompanantes: valores.num_acompanantes || 0,
+      fecha_check_in: inicio ? inicio.format("YYYY-MM-DD") : null,
+      fecha_check_out: fin ? fin.format("YYYY-MM-DD") : null,
+      tipologia: valores.tipologia || null,
     };
-    delete equipoData.fechas_estancia;
+    delete datosEquipo.fechas_estancia;
 
     api
-      .saveEquipo(equipoData)
+      .saveEquipo(datosEquipo)
       .then(() => {
         message.success("Equipo añadido al club");
         formEquipo.resetFields();
@@ -89,7 +89,7 @@ const Equipos = () => {
       });
   };
 
-  const handleDeleteClub = (id) => {
+  const manejarEliminacionClub = (id) => {
     api
       .deleteClub(id)
       .then(() => {
@@ -101,7 +101,7 @@ const Equipos = () => {
       });
   };
 
-  const handleDeleteEquipo = (id) => {
+  const manejarEliminacionEquipo = (id) => {
     api
       .deleteEquipo(id)
       .then(() => {
@@ -142,11 +142,11 @@ const Equipos = () => {
     if (filtros.comercial && club.comercial !== filtros.comercial) return false;
 
     // los clubs que no tienen equipos filtrado elegido, ocultar
-    const isCategoriaFiltered = filtros.categorias.length > 0;
+    const hayFiltroCategoria = filtros.categorias.length > 0;
     const tieneEquiposValidos = equiposFiltrados.some(
       (eq) => eq.club_id === club.id,
     );
-    if (isCategoriaFiltered && !tieneEquiposValidos) return false;
+    if (hayFiltroCategoria && !tieneEquiposValidos) return false;
 
     return true;
   });
@@ -161,7 +161,7 @@ const Equipos = () => {
           style={{ marginBottom: 24 }}
           headStyle={{ color: "#ff4d4f" }}
         >
-          <Form form={formClub} layout="vertical" onFinish={onFinishClub}>
+          <Form form={formClub} layout="vertical" onFinish={alEnviarClub}>
             <Form.Item
               name="nombre"
               label="Nombre Club"
@@ -194,7 +194,7 @@ const Equipos = () => {
                 <Option value="Nestor García">Nestor García</Option>
                 <Option value="Nando">Nando</Option>
                 <Option value="Darren DBSports">Darren DBSports</Option>
-                <Option value="Rory TW Soccer">Rory TW Soccer</Option>
+                <Option value="Rory TW Soccer">Rory TW Soccer</Option>
                 <Option value="OnSports">OnSports</Option>
                 <Option value="Vigfús Geir (TA Sport Travel)">
                   Vigfús Geir (TA Sport Travel)
@@ -245,7 +245,7 @@ const Equipos = () => {
           className="cool-card card-equipo-form"
           headStyle={{ color: "#ff4d4f" }}
         >
-          <Form form={formEquipo} layout="vertical" onFinish={onFinishEquipo}>
+          <Form form={formEquipo} layout="vertical" onFinish={alEnviarEquipo}>
             <Form.Item
               name="club_id"
               label="Club"
@@ -397,7 +397,7 @@ const Equipos = () => {
               className="cool-card card-equipo"
               bodyStyle={{ padding: "16px 24px" }}
             >
-              {/*外层：俱乐部信息 & 垃圾桶图标*/}
+              {/*info del club y eliminar*/}
               <Row justify="space-between" align="middle">
                 <Col>
                   <Title level={5} style={{ margin: 0, color: "#ff4d4f" }}>
@@ -424,13 +424,13 @@ const Equipos = () => {
                   )}
                 </Col>
 
-                {/* 俱乐部的垃圾桶删除按钮 */}
+                {/* eliminar del club */}
                 <Col>
                   <Tooltip title="Eliminar club">
                     <Popconfirm
                       title="¿Eliminar este club?"
                       description="Se borrarán también todos sus equipos. Esta acción no se puede deshacer."
-                      onConfirm={() => handleDeleteClub(club.id)}
+                      onConfirm={() => manejarEliminacionClub(club.id)}
                       okText="Sí, eliminar"
                       cancelText="Cancelar"
                       okButtonProps={{ danger: true }}
@@ -448,7 +448,7 @@ const Equipos = () => {
 
               <Divider style={{ margin: "12px 0" }} />
 
-              {/*内层：队伍列表 & 红色叉叉*/}
+              {/*lista de equipos y eliminar*/}
               <Text
                 strong
                 style={{ fontSize: "12px", display: "block", marginBottom: 8 }}
@@ -464,7 +464,7 @@ const Equipos = () => {
                   equiposFiltrados
                     .filter((eq) => eq.club_id === club.id)
                     .map((equipo) => {
-                      // 队伍的总人数
+                      // total personas de equipo
                       const totalPersonas =
                         (equipo.num_jugadores || 0) +
                         (equipo.num_entrenadores || 0) +
@@ -475,7 +475,7 @@ const Equipos = () => {
                           key={equipo.id}
                           size="small"
                           style={{
-                            marginBottom: 12, // 卡片间距
+                            marginBottom: 12, 
                             width: "100%",
                             borderRadius: "8px",
                           }}
@@ -485,7 +485,7 @@ const Equipos = () => {
                           }}
                         >
                           <Row justify="space-between" align="top">
-                            {/* 左侧：类别和日期 */}
+                            {/* fecha y categoria */}
                             <Col flex="auto">
                               <Text
                                 strong
@@ -501,15 +501,13 @@ const Equipos = () => {
                                     {equipo.tipologia}
                                   </Tag>
                                 )}
-                                {/* 新增：房型标签 */}
+                                {/* tipo de habitación */}
                                 {equipo.tipo_habitacion_deseada && (
                                   <Tag color="purple" style={{ marginLeft: 8 }}>
                                     {equipo.tipo_habitacion_deseada}
                                   </Tag>
                                 )}
                               </Text>
-
-                              {/* 日期卡片区域保持不变 */}
                               {equipo.fecha_check_in && (
                                 <Space
                                   size={4}
@@ -542,7 +540,7 @@ const Equipos = () => {
                                 </Space>
                               )}
 
-                              {/* 新增：显示备注区域 */}
+                              {/* observaciones */}
                               {equipo.observaciones && (
                                 <Text
                                   type="secondary"
@@ -560,7 +558,7 @@ const Equipos = () => {
                               )}
                             </Col>
 
-                            {/* 右侧：人数标签和删除按钮 */}
+                            {/* numero de personas */}
                             <Col
                               style={{
                                 display: "flex",
@@ -583,7 +581,7 @@ const Equipos = () => {
                               </Tag>
                               <Popconfirm
                                 title="¿Eliminar este equipo?"
-                                onConfirm={() => handleDeleteEquipo(equipo.id)}
+                                onConfirm={() => manejarEliminacionEquipo(equipo.id)}
                                 okText="Sí"
                                 cancelText="No"
                               >

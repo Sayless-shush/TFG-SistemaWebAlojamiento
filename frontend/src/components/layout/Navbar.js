@@ -52,7 +52,7 @@ const Navbar = ({ vistaActiva, setVistaActiva }) => {
               letterSpacing: '-1.5px'
             }}
           >
-            Gestión de Alojamientos💤
+            Gestión de Alojamientos
           </Title>
         </div>
         <Menu

@@ -42,11 +42,11 @@ const Hoteles = () => {
     cargarDatos();
   }, []);
 
-  const onFinishHotel = (values) => {
+  const alEnviarHotel = (valores) => {
     api
       .saveHotel({
-        ...values,
-        cerca_autobus: values.cerca_autobus ? 1 : 0,
+        ...valores,
+        cerca_autobus: valores.cerca_autobus ? 1 : 0,
       })
       .then(() => {
         message.success("Hotel guardado correctamente");
@@ -55,17 +55,18 @@ const Hoteles = () => {
       });
   };
 
-  const onFinishHabitacion = (values) => {
-    const [start, end] = values.fechas_disponibilidad || [];
+  const alEnviarHabitacion = (valores) => {
+    const [inicio, fin] = valores.fechas_disponibilidad || [];
 
-    const habitacionData = {
-      ...values,
-      disponible_desde: start ? start.format("YYYY-MM-DD") : null,
-      disponible_hasta: end ? end.format("YYYY-MM-DD") : null,
+    const datosHabitacion = {
+      ...valores,
+      disponible_desde: inicio ? inicio.format("YYYY-MM-DD") : null,
+      disponible_hasta: fin ? fin.format("YYYY-MM-DD") : null,
     };
-    delete habitacionData.fechas_disponibilidad;
+    delete datosHabitacion.fechas_disponibilidad;
+    
     api
-      .saveHabitacion(habitacionData)
+      .saveHabitacion(datosHabitacion)
       .then(() => {
         message.success("Habitación añadida con éxito");
         formHab.resetFields();
@@ -77,25 +78,26 @@ const Hoteles = () => {
       });
   };
 
-  const handleDeleteHotel = (id) => {
+  const manejarEliminacionHotel = (id) => {
     api
       .deleteHotel(id)
       .then(() => {
         message.success("Hotel eliminado correctamente");
         cargarDatos();
       })
-      .catch((err) => {
+      .catch((error) => {
         message.error("Error al eliminar el hotel");
       });
   };
-  const handleDeleteHabitacion = (id) => {
+  
+  const manejarEliminacionHabitacion = (id) => {
     api
       .deleteHabitacion(id)
       .then(() => {
         message.success("Habitación eliminada");
         cargarDatos();
       })
-      .catch((err) => {
+      .catch((error) => {
         message.error("Error al eliminar la habitación");
       });
   };
@@ -110,7 +112,7 @@ const Hoteles = () => {
           style={{ marginBottom: 24 }}
           headStyle={{ color: "#1677ff" }}
         >
-          <Form form={formHotel} layout="vertical" onFinish={onFinishHotel}>
+          <Form form={formHotel} layout="vertical" onFinish={alEnviarHotel}>
             <Form.Item
               name="nombre"
               label="Nombre"
@@ -157,7 +159,7 @@ const Hoteles = () => {
           className="cool-card card-hotel-form"
           headStyle={{ color: "#1677ff" }}
         >
-          <Form form={formHab} layout="vertical" onFinish={onFinishHabitacion}>
+          <Form form={formHab} layout="vertical" onFinish={alEnviarHabitacion}>
             <Form.Item
               name="hotel_id"
               label="Hotel"
@@ -277,7 +279,7 @@ const Hoteles = () => {
                     <Popconfirm
                       title="¿Eliminar este hotel?"
                       description="Se borrarán también todas sus habitaciones. Esta acción no se puede deshacer."
-                      onConfirm={() => handleDeleteHotel(hotel.id)}
+                      onConfirm={() => manejarEliminacionHotel(hotel.id)}
                       okText="sí, adéu"
                       cancelText="Cancelar"
                     >
@@ -324,7 +326,7 @@ const Hoteles = () => {
                         }}
                       >
                         <Row justify="space-between" align="top">
-                          {/* 左侧：房型、容量和可用日期 */}
+                          {/*tipo, pax y fecha*/}
                           <Col flex="auto">
                             <Text
                               strong
@@ -347,7 +349,7 @@ const Hoteles = () => {
                               Capacidad: {hab.capacidad} pax/hab
                             </Text>
 
-                            {/* 日期卡片区域*/}
+                            {/*fecha*/}
                             {hab.disponible_desde && (
                               <Space
                                 size={4}
@@ -373,7 +375,7 @@ const Hoteles = () => {
                             )}
                           </Col>
 
-                          {/* 右侧：房间数量标签和删除按钮 */}
+                          {/*numero de habitaciones*/}
                           <Col
                             style={{
                               display: "flex",
@@ -397,7 +399,7 @@ const Hoteles = () => {
 
                             <Popconfirm
                               title="¿Eliminar esta habitación?"
-                              onConfirm={() => handleDeleteHabitacion(hab.id)}
+                              onConfirm={() => manejarEliminacionHabitacion(hab.id)}
                               okText="Sí"
                               cancelText="No"
                             >

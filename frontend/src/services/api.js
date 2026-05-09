@@ -45,6 +45,20 @@ const api = {
   deleteHabitacion: (id) => fetch(`${BASE_URL}/habitaciones/${id}`, {
     method: 'DELETE'
   }).then(res => res.json()),
+
+  // asignacion
+  runAsignacion: async () => {
+    const response = await fetch(`${BASE_URL}/asignar`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    if (!response.ok) {
+      throw new Error('Error en la red al ejecutar la asignación');
+    }
+    return await response.json();
+  },
 };
+
+
 
 export default api;

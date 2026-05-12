@@ -42,11 +42,16 @@ exports.asignarAuto = (clubes, equipos, hoteles, habitaciones) => {
         let estaAsignado = false;
 
         let hotelesCandidatos = hoteles.filter(h => {
+            // Prioridad 1：Manual es supremo de todo
+            if (club.hotel_manual_id) {
+                return h.id === club.hotel_manual_id;
+            }
+
+            // Prioridad 2：Si el club necesita bus, el hotel debe ser cercano al bus
             if (club.tiene_bus && !h.cerca_autobus) return false;
 
-            let habitacionesHotel = inventarioGlobal.filter(r => r.hotel_id === h.id);
-            let capacidadTotalHotel = habitacionesHotel.reduce((suma, r) => suma + (r.capacidad * r.cantidad_total), 0);
-            if (capacidadTotalHotel < club.totalPersonas) return false;
+            // Prioridad 3：Si el club tiene una categoría pagada, el hotel debe ser de esa categoría
+            if (club.categoria_pagada && h.categoria !== club.categoria_pagada) return false;
 
             return true;
         });
@@ -122,6 +127,7 @@ exports.asignarAuto = (clubes, equipos, hoteles, habitaciones) => {
                     club_nombre: club.nombre,
                     hotel_id: hotel.id,
                     hotel_nombre: hotel.nombre,
+                    hotel_categoria: hotel.categoria,
                     equipos_asignados: asignacionesTemporales
                 });
                 estaAsignado = true;

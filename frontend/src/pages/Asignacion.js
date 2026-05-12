@@ -12,6 +12,7 @@ import {
   Alert,
   Divider,
   Space,
+  Select,
 } from "antd";
 import {
   RocketOutlined,
@@ -21,9 +22,11 @@ import {
 import api from "../services/api";
 
 const { Title, Text } = Typography;
+const { Option } = Select;
 
 const Asignacion = () => {
   const [cargando, setCargando] = useState(false);
+  const [filtroCategoria, setFiltroCategoria] = useState(null);
 
   // localstore para persistir el último resultado de asignación, incluso al recargar la página
   const [resultado, setResultado] = useState(() => {
@@ -73,7 +76,7 @@ const Asignacion = () => {
       const nombreHotel = asig.hotel_nombre;
       const idHotel = asig.hotel_id;
       if (!agrupado[nombreHotel]) {
-        agrupado[nombreHotel] = { id: idHotel, clubes: [], inventario: [] };
+        agrupado[nombreHotel] = { id: idHotel, categoria: asig.hotel_categoria, clubes: [], inventario: [] };
       }
       agrupado[nombreHotel].clubes.push(asig);
     });
@@ -104,6 +107,11 @@ const Asignacion = () => {
   const hotelesAgrupados = resultado
     ? agruparPorHotel(resultado.datos, resultado.inventarioRestante)
     : {};
+  
+  const hotelesMostrar = Object.entries(hotelesAgrupados).filter(([nombre, datos]) => {
+    if (!filtroCategoria) return true; 
+    return datos.categoria === filtroCategoria;
+  });
 
   return (
     <div style={{ padding: "0px" }}>
@@ -125,6 +133,7 @@ const Asignacion = () => {
               Ejecuta el algoritmo para distribuir a los clubes en los hoteles.
             </Text>
           </Col>
+
           <Col>
             <Button
               type="primary"
@@ -311,8 +320,20 @@ const Asignacion = () => {
             <Title level={4} style={{ marginBottom: 16 }}>
               🏨 Distribución por Hotel
             </Title>
+            <Select 
+                allowClear 
+                placeholder="Filtrar por Categoría de Hotel" 
+                style={{ width: 250 }}
+                onChange={setFiltroCategoria}
+                value={filtroCategoria}
+              >
+                <Option value={null}>Todo</Option>
+                <Option value="4 estrellas">4 estrellas</Option>
+                <Option value="3 estrellas">3 estrellas</Option>
+                <Option value="Resort">Resort</Option>
+              </Select>
             <Row gutter={[16, 16]}>
-              {Object.entries(hotelesAgrupados).map(
+              {hotelesMostrar.map(
                 ([nombreHotel, datosHotel]) => (
                   <Col xs={24} lg={12} key={nombreHotel}>
                     <Card

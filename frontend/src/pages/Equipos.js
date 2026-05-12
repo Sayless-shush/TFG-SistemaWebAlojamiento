@@ -34,6 +34,7 @@ const { RangePicker } = DatePicker;
 
 const Equipos = () => {
   const [clubes, setClubes] = useState([]);
+  const [hoteles, setHoteles] = useState([]);
   const [filtros, setFiltros] = useState({
     categorias: [], // multiples categorias
     tieneBus: null, // true es si bus, false es no bus, null es sin filtro
@@ -45,6 +46,7 @@ const Equipos = () => {
   const cargarDatos = () => {
     api.getClubes().then((datos) => setClubes(datos));
     api.getEquipos().then((datos) => setEquipos(datos));
+    api.getHoteles().then((datos) => setHoteles(datos));
   };
 
   useEffect(() => {
@@ -168,6 +170,17 @@ const Equipos = () => {
               rules={[{ required: true, message: "Obligatorio" }]}
             >
               <Input placeholder="Ej: FC Barcelona" />
+            </Form.Item>
+            <Form.Item
+              name="categoria_pagada"
+              label="Categoría de Hotel Pagada"
+              rules={[{ required: true, message: "Seleccione la categoría" }]}
+            >
+              <Select placeholder="Selecciona la categoría">
+                <Option value="3 estrellas">3 estrellas</Option>
+                <Option value="4 estrellas">4 estrellas</Option>
+                <Option value="Resort">Resort</Option>
+              </Select>
             </Form.Item>
             <Form.Item name="contacto_nombre" label="Nombre de Contacto">
               <Input placeholder="Ej: Juan Pérez" />
@@ -423,9 +436,43 @@ const Equipos = () => {
                     </Tag>
                   )}
                 </Col>
-
-                {/* eliminar del club */}
+                {/* Asig manual y eliminar del club */}
                 <Col>
+                  <div style={{ textAlign: "left" }}>
+                    <Text
+                      strong
+                      style={{
+                        fontSize: "11px",
+                        display: "block",
+                        marginBottom: "2px",
+                        color: "#888",
+                      }}
+                    >
+                      Asignar Hotel Manualmente (Opcional):
+                    </Text>
+                    <Select
+                      placeholder="Seleccionar hotel..."
+                      style={{ width: "200px" }}
+                      allowClear
+                      value={club.hotel_manual_id}
+                      onChange={(valor) => {
+                        api
+                          .updateClubHotel(club.id, valor)
+                          .then(() => {
+                            message.success(
+                              `Hotel manual actualizado para ${club.nombre}`,
+                            );
+                            cargarDatos();
+                          });
+                      }}
+                    >
+                      {hoteles.map((h) => (
+                        <Option key={h.id} value={h.id}>
+                          {h.nombre} ({h.categoria})
+                        </Option>
+                      ))}
+                    </Select>
+                  </div>
                   <Tooltip title="Eliminar club">
                     <Popconfirm
                       title="¿Eliminar este club?"
@@ -475,7 +522,7 @@ const Equipos = () => {
                           key={equipo.id}
                           size="small"
                           style={{
-                            marginBottom: 12, 
+                            marginBottom: 12,
                             width: "100%",
                             borderRadius: "8px",
                           }}
@@ -581,7 +628,9 @@ const Equipos = () => {
                               </Tag>
                               <Popconfirm
                                 title="¿Eliminar este equipo?"
-                                onConfirm={() => manejarEliminacionEquipo(equipo.id)}
+                                onConfirm={() =>
+                                  manejarEliminacionEquipo(equipo.id)
+                                }
                                 okText="Sí"
                                 cancelText="No"
                               >

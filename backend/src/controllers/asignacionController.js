@@ -8,7 +8,7 @@ exports.ejecutarAsignacion = async (req, res) => {
         const [hoteles] = await db.query('SELECT * FROM hoteles');
         const [habitaciones] = await db.query('SELECT * FROM habitaciones');
 
-        const resultado = servicioAsignacion.asignarAutomaticamente(clubes, equipos, hoteles, habitaciones);
+        const resultado = servicioAsignacion.asignarAuto(clubes, equipos, hoteles, habitaciones);
 
         res.json(resultado);
     } catch (error) {

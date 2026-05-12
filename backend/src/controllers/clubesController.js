@@ -11,15 +11,31 @@ exports.getClubes = async (req, res) => {
 };
 
 exports.addClub = async (req, res) => {
-    const { nombre, contacto_nombre, contacto_email, contacto_telefono, comercial, tiene_bus } = req.body;
     try {
-        const busVal = tiene_bus ? 1 : 0; 
-        const sql = 'INSERT INTO clubes (nombre, contacto_nombre, contacto_email, contacto_telefono, comercial, tiene_bus) VALUES (?, ?, ?, ?, ?, ?)';
-        const [results] = await db.query(sql, [nombre, contacto_nombre, contacto_email, contacto_telefono, comercial, busVal]);
-        res.json({ message: 'Club guardado', id: results.insertId });
-    } catch (err) {
-        console.error('Error al guardar club:', err);
-        res.status(500).json({ error: 'Error al guardar el club' });
+        // catrgoria pagada
+        const { nombre, contacto_nombre, contacto_telefono, contacto_email, comercial, tiene_bus, categoria_pagada } = req.body;
+        
+        await db.query(
+            'INSERT INTO clubes (nombre, contacto_nombre, contacto_telefono, contacto_email, comercial, tiene_bus, categoria_pagada) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [nombre, contacto_nombre, contacto_telefono, contacto_email, comercial, tiene_bus, categoria_pagada]
+        );
+        
+        res.json({ success: true, message: 'Club creado correctamente' });
+    } catch (error) {
+        console.error('Error al guardar el club:', error);
+        res.status(500).json({ error: 'Error al conectar con la base de datos' });
+    }
+};
+
+exports.updateClubHotel = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { hotel_manual_id } = req.body;
+        await db.query('UPDATE clubes SET hotel_manual_id = ? WHERE id = ?', [hotel_manual_id, id]);
+        res.json({ success: true, message: 'Hotel manual actualizado' });
+    } catch (error) {
+        console.error('Error al actualizar el hotel manual:', error);
+        res.status(500).json({ error: 'Error al actualizar' });
     }
 };
 

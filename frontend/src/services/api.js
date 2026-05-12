@@ -20,6 +20,14 @@ const api = {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(club)
   }).then(res => res.json()),
+  updateClubHotel: (clubId, hotelId) => {
+    const valor = hotelId || null; 
+    return fetch(`${BASE_URL}/clubes/${clubId}/hotel`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ hotel_manual_id: valor })
+    }).then(res => res.json());
+  },
   deleteClub: (id) => fetch(`${BASE_URL}/clubes/${id}`, {
     method: 'DELETE'
   }).then(res => res.json()),

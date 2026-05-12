@@ -133,9 +133,7 @@ const Hoteles = () => {
               <Select>
                 <Option value="3 estrellas">3 estrellas</Option>
                 <Option value="4 estrellas">4 estrellas</Option>
-                <Option value="5 estrellas">5 estrellas</Option>
                 <Option value="Resort">Resort</Option>
-                <Option value="Apartamento">Apartamento</Option>
               </Select>
             </Form.Item>
             <Form.Item name="cerca_autobus" valuePropName="checked">

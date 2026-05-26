@@ -11,12 +11,12 @@ exports.getEquipos = async (req, res) => {
 };
 
 exports.addEquipo = async (req, res) => {
-    const { club_id, categoria, num_jugadores, num_entrenadores, num_acompanantes, fecha_check_in, fecha_check_out, tipo_habitacion_deseada, observaciones, tipologia } = req.body;
+    const { club_id, categoria, num_jugadores, num_entrenadores, num_acompanantes, fecha_check_in, fecha_check_out, tipo_habitacion_deseada,  tipologia, manual_dobles, manual_individuales } = req.body;
     try {
         const sql = `INSERT INTO equipos 
-                     (club_id, categoria, num_jugadores, num_entrenadores, num_acompanantes, fecha_check_in, fecha_check_out, tipo_habitacion_deseada, observaciones, tipologia) 
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-        await db.query(sql, [club_id, categoria, num_jugadores, num_entrenadores, num_acompanantes, fecha_check_in, fecha_check_out, tipo_habitacion_deseada, observaciones, tipologia]);
+                     (club_id, categoria, num_jugadores, num_entrenadores, num_acompanantes, fecha_check_in, fecha_check_out, tipo_habitacion_deseada, tipologia, manual_dobles, manual_individuales) 
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+        await db.query(sql, [club_id, categoria, num_jugadores, num_entrenadores, num_acompanantes, fecha_check_in, fecha_check_out, tipo_habitacion_deseada,  tipologia, manual_dobles, manual_individuales]);
         res.json({ message: 'Equipo guardado con detalles' });
     } catch (err) {
         res.status(500).json({ error: 'Error al guardar equipo' });

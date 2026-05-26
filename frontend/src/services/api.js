@@ -28,6 +28,11 @@ const api = {
       body: JSON.stringify({ hotel_manual_id: valor })
     }).then(res => res.json());
   },
+  updateClubComentarios: (clubId, comentarios) => fetch(`${BASE_URL}/clubes/${clubId}/comentarios`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ comentarios })
+  }).then(res => res.json()),
   deleteClub: (id) => fetch(`${BASE_URL}/clubes/${id}`, {
     method: 'DELETE'
   }).then(res => res.json()),

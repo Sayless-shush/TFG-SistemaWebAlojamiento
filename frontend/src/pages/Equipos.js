@@ -17,6 +17,7 @@ import {
   Tooltip,
   DatePicker,
   Radio,
+  InputNumber,
 } from "antd";
 import {
   FilterOutlined,
@@ -37,7 +38,8 @@ const Equipos = () => {
   const [hoteles, setHoteles] = useState([]);
   const [filtros, setFiltros] = useState({
     categorias: [], // multiples categorias
-    tieneBus: null, // true es si bus, false es no bus, null es sin filtro
+    tieneBus: null,
+    categoriaPagada: null // true es si bus, false es no bus, null es sin filtro
   });
   const [equipos, setEquipos] = useState([]);
   const [formClub] = Form.useForm();
@@ -142,6 +144,12 @@ const Equipos = () => {
       return false;
     // si no conincide con el comercial, ocultar
     if (filtros.comercial && club.comercial !== filtros.comercial) return false;
+
+    if (
+      filtros.categoriaPagada &&
+      club.categoria_pagada !== filtros.categoriaPagada
+    )
+      return false;
 
     // los clubs que no tienen equipos filtrado elegido, ocultar
     const hayFiltroCategoria = filtros.categorias.length > 0;
@@ -312,18 +320,38 @@ const Equipos = () => {
               ]}
             >
               <Select placeholder="Selecciona el tipo de habitación preferida">
-                <Option value="1Persona">1 Persona</Option>
-                <Option value="Doble">Doble</Option>
                 <Option value="Triple">Triple</Option>
                 <Option value="Cuádruple">Cuádruple</Option>
               </Select>
             </Form.Item>
-            <Form.Item name="observaciones" label="Observaciones (Opcional)">
-              <Input.TextArea
-                rows={2}
-                placeholder="Alergias, peticiones especiales..."
-              />
-            </Form.Item>
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item
+                  name="manual_dobles"
+                  label="Asignar Dobles"
+                  initialValue={0}
+                >
+                  <InputNumber
+                    min={0}
+                    style={{ width: "100%" }}
+                    placeholder="Ej. 1 para Entrenador"
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item
+                  name="manual_individuales"
+                  label="Asignar Individuales"
+                  initialValue={0}
+                >
+                  <InputNumber
+                    min={0}
+                    style={{ width: "100%" }}
+                    placeholder="Ej. 1 para Conductor"
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
             <Button
               type="primary"
               htmlType="submit"
@@ -387,7 +415,7 @@ const Equipos = () => {
               </Select>
             </Col>
             <Col>
-              {/* Filtos bus */}
+              {/* Filtos bus y categoria pagada */}
               <Radio.Group
                 value={filtros.tieneBus}
                 onChange={(e) =>
@@ -400,6 +428,18 @@ const Equipos = () => {
                 <Radio.Button value={false}>Sin Bus</Radio.Button>
               </Radio.Group>
             </Col>
+            <Select
+              placeholder="Filtrar por Categoría Pagada"
+              allowClear
+              style={{ width: 220, marginLeft: 16 }}
+              onChange={(val) =>
+                setFiltros({ ...filtros, categoriaPagada: val })
+              }
+            >
+              <Option value="4 estrellas">4 estrellas</Option>
+              <Option value="3 estrellas">3 estrellas</Option>
+              <Option value="Resort">Resort</Option>
+            </Select>
           </Row>
         </Card>
         <Space direction="vertical" style={{ width: "100%" }} size="middle">
@@ -435,6 +475,26 @@ const Equipos = () => {
                       Comercial: {club.comercial}
                     </Tag>
                   )}
+                  <Tag color="purple" style={{ marginTop: 8 }}>
+                    💳 Pagado: {club.categoria_pagada || "Sin especificar"}
+                  </Tag>
+                  <div style={{ marginTop: 16 }}>
+                    <Text type="secondary" style={{ fontSize: "12px" }}>
+                      Notas y Observaciones del Club:
+                    </Text>
+                    <Input.TextArea
+                      defaultValue={club.comentarios}
+                      placeholder="Escribe aquí observaciones generales"
+                      onBlur={(e) => {
+                        api
+                          .updateClubComentarios(club.id, e.target.value)
+                          .then(() =>
+                            message.success("Notas guardadas correctamente"),
+                          );
+                      }}
+                      autoSize={{ minRows: 2, maxRows: 4 }}
+                    />
+                  </div>
                 </Col>
                 {/* Asig manual y eliminar del club */}
                 <Col>
@@ -456,14 +516,12 @@ const Equipos = () => {
                       allowClear
                       value={club.hotel_manual_id}
                       onChange={(valor) => {
-                        api
-                          .updateClubHotel(club.id, valor)
-                          .then(() => {
-                            message.success(
-                              `Hotel manual actualizado para ${club.nombre}`,
-                            );
-                            cargarDatos();
-                          });
+                        api.updateClubHotel(club.id, valor).then(() => {
+                          message.success(
+                            `Hotel manual actualizado para ${club.nombre}`,
+                          );
+                          cargarDatos();
+                        });
                       }}
                     >
                       {hoteles.map((h) => (
@@ -585,23 +643,6 @@ const Equipos = () => {
                                     </div>
                                   </div>
                                 </Space>
-                              )}
-
-                              {/* observaciones */}
-                              {equipo.observaciones && (
-                                <Text
-                                  type="secondary"
-                                  italic
-                                  style={{
-                                    fontSize: "11px",
-                                    display: "block",
-                                    background: "#eee",
-                                    padding: "4px",
-                                    borderRadius: "4px",
-                                  }}
-                                >
-                                  📝 {equipo.observaciones}
-                                </Text>
                               )}
                             </Col>
 

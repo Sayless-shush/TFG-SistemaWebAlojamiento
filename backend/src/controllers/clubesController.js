@@ -39,6 +39,18 @@ exports.updateClubHotel = async (req, res) => {
     }
 };
 
+exports.updateClubComentarios = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { comentarios } = req.body;
+        await db.query('UPDATE clubes SET comentarios = ? WHERE id = ?', [comentarios, id]);
+        res.json({ success: true, message: 'Comentarios actualizados' });
+    } catch (error) {
+        console.error('Error al actualizar comentarios:', error);
+        res.status(500).json({ error: 'Error al actualizar' });
+    }
+};
+
 exports.deleteClub = async (req, res) => {
     const { id } = req.params;
     try {

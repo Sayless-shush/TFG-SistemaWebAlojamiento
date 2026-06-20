@@ -76,7 +76,12 @@ const Asignacion = () => {
       const nombreHotel = asig.hotel_nombre;
       const idHotel = asig.hotel_id;
       if (!agrupado[nombreHotel]) {
-        agrupado[nombreHotel] = { id: idHotel, categoria: asig.hotel_categoria, clubes: [], inventario: [] };
+        agrupado[nombreHotel] = {
+          id: idHotel,
+          categoria: asig.hotel_categoria,
+          clubes: [],
+          inventario: [],
+        };
       }
       agrupado[nombreHotel].clubes.push(asig);
     });
@@ -107,11 +112,13 @@ const Asignacion = () => {
   const hotelesAgrupados = resultado
     ? agruparPorHotel(resultado.datos, resultado.inventarioRestante)
     : {};
-  
-  const hotelesMostrar = Object.entries(hotelesAgrupados).filter(([nombre, datos]) => {
-    if (!filtroCategoria) return true; 
-    return datos.categoria === filtroCategoria;
-  });
+
+  const hotelesMostrar = Object.entries(hotelesAgrupados).filter(
+    ([nombre, datos]) => {
+      if (!filtroCategoria) return true;
+      return datos.categoria === filtroCategoria;
+    },
+  );
 
   return (
     <div style={{ padding: "0px" }}>
@@ -320,173 +327,186 @@ const Asignacion = () => {
             <Title level={4} style={{ marginBottom: 16 }}>
               🏨 Distribución por Hotel
             </Title>
-            <Select 
-                allowClear 
-                placeholder="Filtrar por Categoría de Hotel" 
-                style={{ width: 250 }}
-                onChange={setFiltroCategoria}
-                value={filtroCategoria}
-              >
-                <Option value={null}>Todo</Option>
-                <Option value="4 estrellas">4 estrellas</Option>
-                <Option value="3 estrellas">3 estrellas</Option>
-                <Option value="Resort">Resort</Option>
-              </Select>
+            <Select
+              allowClear
+              placeholder="Filtrar por Categoría de Hotel"
+              style={{ width: 250 }}
+              onChange={setFiltroCategoria}
+              value={filtroCategoria}
+            >
+              <Option value={null}>Todo</Option>
+              <Option value="4 estrellas">4 estrellas</Option>
+              <Option value="3 estrellas">3 estrellas</Option>
+              <Option value="Resort">Resort</Option>
+            </Select>
             <Row gutter={[16, 16]}>
-              {hotelesMostrar.map(
-                ([nombreHotel, datosHotel]) => (
-                  <Col xs={24} lg={12} key={nombreHotel}>
-                    <Card
-                      title={
-                        <span
-                          style={{
-                            color: "#1677ff",
-                            fontSize: "16px",
-                            fontWeight: "bold",
-                          }}
-                        >
-                          {nombreHotel}
-                        </span>
-                      }
-                      extra={
-                        <Tag color="blue">
-                          {datosHotel.clubes.length} Club(es)
-                        </Tag>
-                      }
-                      style={{
-                        borderRadius: "8px",
-                        height: "100%",
-                        boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-                      }}
-                      headStyle={{
-                        backgroundColor: "#e6f4ff",
-                        borderBottom: "1px solid #91caff",
-                      }}
-                    >
-                      {/*equipos asignados*/}
-                      <Space
-                        direction="vertical"
-                        style={{ width: "100%" }}
-                        size="large"
-                      >
-                        {datosHotel.clubes.map((club) => (
-                          <div key={club.club_id}>
-                            <Text
-                              strong
-                              style={{ fontSize: "15px", color: "#ff4d4f" }}
-                            >
-                              🛡️ {club.club_nombre}
-                            </Text>
-                            <div
-                              style={{
-                                marginTop: "10px",
-                                display: "flex",
-                                flexDirection: "column",
-                                gap: "8px",
-                                paddingLeft: "10px",
-                              }}
-                            >
-                              {club.equipos_asignados.map((equipo) => (
-                                <div
-                                  key={equipo.equipo_id}
-                                  style={{
-                                    background: "#fafafa",
-                                    padding: "10px 12px",
-                                    borderRadius: "6px",
-                                    border: "1px solid #d9d9d9",
-                                    display: "flex",
-                                    justifyContent: "space-between",
-                                    alignItems: "center",
-                                  }}
-                                >
-                                  <div>
-                                    <Text strong>{equipo.categoria}</Text>
-                                    {equipo.tipologia && (
-                                      <Text
-                                        type="secondary"
-                                        style={{ marginLeft: "6px" }}
-                                      >
-                                        ({equipo.tipologia})
-                                      </Text>
-                                    )}
-                                  </div>
-                                  <div>
-                                    {equipo.habitaciones.map((hab, indice) => (
-                                      <Tag
-                                        color="cyan"
-                                        key={indice}
-                                        style={{
-                                          margin: "0 0 0 6px",
-                                          fontSize: "13px",
-                                          padding: "4px 8px",
-                                          borderRadius: "4px",
-                                        }}
-                                      >
-                                        {hab.cantidad_asignada}x {hab.tipo}
-                                      </Tag>
-                                    ))}
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        ))}
-                      </Space>
-
-                      <Divider
-                        dashed
+              {hotelesMostrar.map(([nombreHotel, datosHotel]) => (
+                <Col xs={24} lg={12} key={nombreHotel}>
+                  <Card
+                    title={
+                      <span
                         style={{
-                          margin: "20px 0 16px 0",
-                          borderColor: "#d9d9d9",
+                          color: "#1677ff",
+                          fontSize: "16px",
+                          fontWeight: "bold",
                         }}
-                      />
-
-                      {/*habitaciones restantes*/}
-                      <div>
-                        <Text
-                          type="secondary"
-                          strong
-                          style={{ display: "block", marginBottom: "10px" }}
-                        >
-                          🛏️ Habitaciones Disponibles (Sin asignar):
-                        </Text>
-                        {datosHotel.inventario.length > 0 ? (
+                      >
+                        {nombreHotel}
+                      </span>
+                    }
+                    extra={
+                      <Tag color="blue">
+                        {datosHotel.clubes.length} Club(es)
+                      </Tag>
+                    }
+                    style={{
+                      borderRadius: "8px",
+                      height: "100%",
+                      boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                    }}
+                    headStyle={{
+                      backgroundColor: "#e6f4ff",
+                      borderBottom: "1px solid #91caff",
+                    }}
+                  >
+                    {/*equipos asignados*/}
+                    <Space
+                      direction="vertical"
+                      style={{ width: "100%" }}
+                      size="large"
+                    >
+                      {datosHotel.clubes.map((club) => (
+                        <div key={club.club_id}>
+                          <Text
+                            strong
+                            style={{ fontSize: "15px", color: "#ff4d4f" }}
+                          >
+                            🛡️ {club.club_nombre}
+                          </Text>
                           <div
                             style={{
+                              marginTop: "10px",
                               display: "flex",
-                              flexWrap: "wrap",
+                              flexDirection: "column",
                               gap: "8px",
+                              paddingLeft: "10px",
                             }}
                           >
-                            {datosHotel.inventario.map((inv, indice) => (
-                              <Tag
-                                color="green"
-                                key={indice}
+                            {club.equipos_asignados.map((equipo) => (
+                              <div
+                                key={equipo.equipo_id}
                                 style={{
-                                  fontSize: "13px",
-                                  padding: "4px 10px",
-                                  borderRadius: "4px",
-                                  border: "1px solid #b7eb8f",
-                                  margin: 0,
+                                  background: "#fafafa",
+                                  padding: "10px 12px",
+                                  borderRadius: "6px",
+                                  border: "1px solid #d9d9d9",
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                  alignItems: "center",
                                 }}
                               >
-                                {inv.cantidad_total}x {inv.tipo}
-                              </Tag>
+                                <div>
+                                  <Text strong>{equipo.categoria}</Text>
+                                  {equipo.tipologia && (
+                                    <Text
+                                      type="secondary"
+                                      style={{ marginLeft: "6px" }}
+                                    >
+                                      ({equipo.tipologia})
+                                    </Text>
+                                  )}
+                                </div>
+                                <div>
+                                  {equipo.habitaciones.map((hab, indice) => (
+                                    <Tag
+                                      color={hab.es_upgrade ? "purple" : "cyan"} // Upgrade es morado
+                                      key={indice}
+                                      style={{
+                                        margin: "0 0 0 6px",
+                                        fontSize: "13px",
+                                        padding: "4px 8px",
+                                        borderRadius: "4px",
+                                      }}
+                                    >
+                                      {hab.cantidad_asignada}x{" "}
+                                      {hab.tipo_solicitado ||
+                                        hab.tipo_asignado ||
+                                        hab.tipo}
+                                      {/* UPGRADE */}
+                                      {hab.es_upgrade && (
+                                        <span
+                                          style={{
+                                            fontSize: "11px",
+                                            opacity: 0.85,
+                                            marginLeft: "4px",
+                                          }}
+                                        >
+                                          (en {hab.tipo_asignado})
+                                        </span>
+                                      )}
+                                    </Tag>
+                                  ))}
+                                </div>
+                              </div>
                             ))}
                           </div>
-                        ) : (
-                          <Text
-                            type="danger"
-                            style={{ fontSize: "13px", fontWeight: "bold" }}
-                          >
-                            ¡Hotel Completo! (0 habitaciones libres)
-                          </Text>
-                        )}
-                      </div>
-                    </Card>
-                  </Col>
-                ),
-              )}
+                        </div>
+                      ))}
+                    </Space>
+
+                    <Divider
+                      dashed
+                      style={{
+                        margin: "20px 0 16px 0",
+                        borderColor: "#d9d9d9",
+                      }}
+                    />
+
+                    {/*habitaciones restantes*/}
+                    <div>
+                      <Text
+                        type="secondary"
+                        strong
+                        style={{ display: "block", marginBottom: "10px" }}
+                      >
+                        🛏️ Habitaciones Disponibles (Sin asignar):
+                      </Text>
+                      {datosHotel.inventario.length > 0 ? (
+                        <div
+                          style={{
+                            display: "flex",
+                            flexWrap: "wrap",
+                            gap: "8px",
+                          }}
+                        >
+                          {datosHotel.inventario.map((inv, indice) => (
+                            <Tag
+                              color="green"
+                              key={indice}
+                              style={{
+                                fontSize: "13px",
+                                padding: "4px 10px",
+                                borderRadius: "4px",
+                                border: "1px solid #b7eb8f",
+                                margin: 0,
+                              }}
+                            >
+                              {inv.cantidad_total}x {inv.tipo}
+                            </Tag>
+                          ))}
+                        </div>
+                      ) : (
+                        <Text
+                          type="danger"
+                          style={{ fontSize: "13px", fontWeight: "bold" }}
+                        >
+                          ¡Hotel Completo! (0 habitaciones libres)
+                        </Text>
+                      )}
+                    </div>
+                  </Card>
+                </Col>
+              ))}
             </Row>
           </div>
         )}

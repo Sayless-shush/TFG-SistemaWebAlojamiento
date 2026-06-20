@@ -61,6 +61,13 @@ function calcularDistribucionHabitaciones(equipo) {
   };
 }
 
+function nombreCapacidad(cap) {
+  if (cap === 1) return "Individual";
+  if (cap === 2) return "Doble";
+  if (cap === 3) return "Triple";
+  return "Cuádruple";
+}
+
 exports.asignarAuto = (clubes, equipos, hoteles, habitaciones) => {
   let clubesNoAsignados = [];
   let asignaciones = [];
@@ -172,30 +179,33 @@ exports.asignarAuto = (clubes, equipos, hoteles, habitaciones) => {
 
               habitacionesAsignadasEquipo.push({
                 habitacion_id: habitacion.id,
-                tipo: habitacion.tipo,
+                tipo_solicitado: nombreCapacidad(cap), // what was requested
+                tipo_asignado: habitacion.tipo,        // what was assigned
                 capacidad: habitacion.capacidad,
                 cantidad_asignada: tomar,
+                es_upgrade: false
               });
             }
           }
 
           // B)Fallback inteligente: Si no hay exactas, usar una habitación MÁS GRANDE (Upgrade)
           if (cantidadNecesaria > 0) {
-            for (let habitacion of habitacionesValidas) {
+            let habitacionesUpgrade = [...habitacionesValidas].sort((a, b) => a.capacidad - b.capacidad);
+
+            for (let habitacion of habitacionesUpgrade) {
               if (cantidadNecesaria <= 0) break;
               if (habitacion.capacidad > cap && habitacion.cantidad_total > 0) {
-                let tomar = Math.min(
-                  cantidadNecesaria,
-                  habitacion.cantidad_total,
-                );
+                let tomar = Math.min(cantidadNecesaria, habitacion.cantidad_total);
                 habitacion.cantidad_total -= tomar;
                 cantidadNecesaria -= tomar;
 
                 habitacionesAsignadasEquipo.push({
                   habitacion_id: habitacion.id,
-                  tipo: habitacion.tipo,
+                  tipo_solicitado: nombreCapacidad(cap), // "Individual"
+                  tipo_asignado: habitacion.tipo,        // pero quita un "Doble"
                   capacidad: habitacion.capacidad,
                   cantidad_asignada: tomar,
+                  es_upgrade: true                       // auntado upgrade
                 });
               }
             }

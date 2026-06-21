@@ -25,39 +25,55 @@ function calcularDistribucionHabitaciones(equipo) {
     (equipo.num_acompanantes || 0);
   const manualDobles = equipo.manual_dobles || 0;
   const manualIndiv = equipo.manual_individuales || 0;
-  //Resta las personas que ya tienen habitación manual asignada
+  
+  // Resta las personas que ya tienen habitación manual asignada
   let paxRestante = totalPax - manualDobles * 2 - manualIndiv * 1;
   if (paxRestante < 0) paxRestante = 0;
 
-  let triples = 0;
-  let cuadruples = 0;
+  // Variables para la asignación automática
+  let doblesAuto = 0;
+  let triplesAuto = 0;
+  let cuadruplesAuto = 0;
 
   if (equipo.tipo_habitacion_deseada === "Cuádruple") {
-    cuadruples = Math.ceil(paxRestante / 4);
+    //Lógica de Empaquetado Perfecto para Cuádruples
+    const numCuadruples = Math.floor(paxRestante / 4);
+    const resto = paxRestante % 4;
+
+    cuadruplesAuto = numCuadruples;
+    
+    if (resto === 3) {
+      triplesAuto = 1; // Si sobran 3, usa exactamente una Triple sin desperdiciar camas
+    } else if (resto === 2) {
+      doblesAuto = 1;  // Si sobran 2, usa una Doble
+    } else if (resto === 1) {
+      doblesAuto = 1;  // Si sobra 1, redondeamos a una Doble (evita pedir individuales si no hay)
+    }
+
   } else if (equipo.tipo_habitacion_deseada === "Triple") {
     const numTriples = Math.floor(paxRestante / 3);
     const resto = paxRestante % 3;
 
     if (resto === 0) {
-      triples = numTriples;
+      triplesAuto = numTriples;
     } else if (resto === 1 && numTriples > 0) {
-      //Si sobra 1 persona, cambiamos una triple por una cuádruple
-      triples = numTriples - 1;
-      cuadruples = 1;
+      triplesAuto = numTriples - 1;
+      cuadruplesAuto = 1;
     } else {
-      //Si sobran 2 personas (o 1 persona pero no hay triples previas), forzar una triple
-      triples = numTriples + 1;
+      triplesAuto = numTriples + 1;
     }
+  } else if (equipo.tipo_habitacion_deseada === "Doble") {
+    doblesAuto = Math.ceil(paxRestante / 2);
   } else {
-    cuadruples = Math.ceil(paxRestante / 4); // Fallback de seguridad
+    cuadruplesAuto = Math.ceil(paxRestante / 4); // Fallback de seguridad extrema
   }
 
-  //Retorna un diccionario indexado por la "capacidad" de la habitación (1, 2, 3 o 4)
+  // Retorna el diccionario sumando las manuales con las calculadas inteligentemente
   return {
     1: manualIndiv,
-    2: manualDobles,
-    3: triples,
-    4: cuadruples,
+    2: manualDobles + doblesAuto,
+    3: triplesAuto,
+    4: cuadruplesAuto,
   };
 }
 

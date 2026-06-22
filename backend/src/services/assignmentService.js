@@ -124,24 +124,38 @@ exports.asignarAuto = (clubes, equipos, hoteles, habitaciones) => {
       // Prioridad 2：Si el club necesita bus, el hotel debe ser cercano al bus
       if (club.tiene_bus && !h.cerca_autobus) return false;
 
-      // Prioridad 3：Si el club tiene una categoría pagada, el hotel debe ser de esa categoría
-      if (club.categoria_pagada && h.categoria !== club.categoria_pagada)
-        return false;
-
+      // permite que el algoritmo busque hoteles que tengan al menos una habitación disponible para las fechas del club
       return true;
     });
 
     hotelesCandidatos.sort((a, b) => {
+      // 1. Escenario Ideal: Si el club tiene una categoría pagada, priorizar hoteles que coincidan con esa categoría
+      let aEsIdeal = a.categoria === club.categoria_pagada ? 1 : 0;
+      let bEsIdeal = b.categoria === club.categoria_pagada ? 1 : 0;
+      
+      if (aEsIdeal !== bEsIdeal) {
+        return bEsIdeal - aEsIdeal; // Si uno es ideal y el otro no, prioriza el ideal
+      }
+
+      // 2. Fallback Macro: Si ninguno es ideal, priorizar hoteles con categoría más cercana a la categoría pagada del club
       const clasificacion = {
         "5 estrellas": 5,
         "4 estrellas": 4,
-        Resort: 4,
+        "Resort": 4,
         "3 estrellas": 3,
-        Apartamento: 2,
+        "Apartamento": 2,
       };
-      return (
-        (clasificacion[b.categoria] || 0) - (clasificacion[a.categoria] || 0)
-      );
+      
+      let nivelDeseado = clasificacion[club.categoria_pagada] || 0;
+      let diffA = Math.abs((clasificacion[a.categoria] || 0) - nivelDeseado);
+      let diffB = Math.abs((clasificacion[b.categoria] || 0) - nivelDeseado);
+
+      //  Si ambos hoteles tienen la misma diferencia de categoría, priorizar el que tenga la categoría más alta
+      if (diffA === diffB) {
+         return (clasificacion[b.categoria] || 0) - (clasificacion[a.categoria] || 0);
+      }
+      
+      return diffA - diffB; // Priorizar el hotel con la diferencia de categoría más pequeña
     });
 
     for (let hotel of hotelesCandidatos) {
@@ -250,16 +264,25 @@ exports.asignarAuto = (clubes, equipos, hoteles, habitaciones) => {
 
       if (hotelTieneCapacidadSuficiente) {
         inventarioGlobal = inventarioTemporal;
+        
+        // Registrar si hubo un fallback de categoría (es decir, si el hotel asignado no coincide con la categoría pagada del club)
+        let esFallbackHotel = false;
+        if (club.categoria_pagada && club.categoria_pagada !== hotel.categoria) {
+          esFallbackHotel = true;
+        }
+
         asignaciones.push({
           club_id: club.id,
           club_nombre: club.nombre,
           hotel_id: hotel.id,
           hotel_nombre: hotel.nombre,
           hotel_categoria: hotel.categoria,
+          categoria_pagada: club.categoria_pagada, // que categoría pagada tenía el club
+          es_fallback_hotel: esFallbackHotel,      // si hubo fallback de categoría
           equipos_asignados: asignacionesTemporales,
         });
         estaAsignado = true;
-        break; // salir del bucle de hoteles candidatos, este club ya tiene asignación
+        break; // salir del bucle de hoteles candidatos
       }
       // si no encaja, el ciclo continúa con el siguiente hotel candidato,
       // sin necesidad de hacer nada extra porque el inventarioTemporal se descarta al salir del bloque.

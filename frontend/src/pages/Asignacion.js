@@ -383,6 +383,19 @@ const Asignacion = () => {
                           >
                             🛡️ {club.club_nombre}
                           </Text>
+                          {/* Si hubo fallback de categoría, mostrar etiqueta destacada! */}
+                          {club.es_fallback_hotel && (
+                            <Tag
+                              color="volcano"
+                              style={{
+                                margin: 0,
+                                borderRadius: "4px",
+                                fontWeight: "bold",
+                              }}
+                            >
+                              Upgrade (Pagado: {club.categoria_pagada})
+                            </Tag>
+                          )}
                           <div
                             style={{
                               marginTop: "10px",
